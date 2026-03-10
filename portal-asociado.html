@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FondoUne — Portal Asociados · Créditos Vivienda</title>
+<script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+/* ════════════════════════════════════════════════════
+   CONFIGURACIÓN FIREBASE — FONDOUNE
+   Reemplaza los valores de abajo con los de tu proyecto
+   Firebase Console → Configuración del proyecto → SDK
+   ════════════════════════════════════════════════════ */
+var FIREBASE_CONFIG = {
+  apiKey:            "REEMPLAZAR_API_KEY",
+  authDomain:        "REEMPLAZAR.firebaseapp.com",
+  projectId:         "REEMPLAZAR_PROJECT_ID",
+  storageBucket:     "REEMPLAZAR.appspot.com",
+  messagingSenderId: "REEMPLAZAR",
+  appId:             "REEMPLAZAR"
+};
+
+/* Inicializar Firebase si la config es válida */
+window._fbDB = null;
+(function() {
+  try {
+    if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== 'REEMPLAZAR_API_KEY') {
+      firebase.initializeApp(FIREBASE_CONFIG);
+      window._fbDB = firebase.firestore();
+      console.log('✅ Firebase conectado correctamente');
+    } else {
+      console.warn('⚠️ Firebase no configurado — usando localStorage');
+    }
+  } catch(e) {
+    console.warn('Firebase error:', e.message);
+    window._fbDB = null;
+  }
+})();
+</script>
+<style>
+:root {
+  --fu-dark:    #1C2B3A;
+  --fu-blue:    #1A4D7C;
+  --fu-blue-lt: #EBF2FA;
+  --fu-gold:    #D4881E;
+  --fu-gold-lt: #FEF5E7;
+  --fu-gold-med:#E8A020;
+  --bg:         #F4F6F9;
+  --surface:    #FFFFFF;
+  --border:     #D6DDE8;
+  --border-lt:  #EBF0F6;
+  --text:       #1C2B3A;
+  --muted:      #5F7189;
+  --muted-lt:   #8FA3B8;
+  --ok:         #0D7A4E;
+  --ok-lt:      #E8F8F0;
+  --err:        #C0392B;
+  --err-lt:     #FDECEA;
+  --shadow-sm:  0 1px 4px rgba(28,43,58,.08);
+  --shadow-md:  0 4px 20px rgba(28,43,58,.10);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
+
+/* HEADER */
+.hdr { background: var(--fu-dark); height: 64px; padding: 0 36px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 12px rgba(0,0,0,.22); }
+.logo { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+.logo-mark { width: 36px; height: 36px; background: var(--fu-gold); border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.logo-mark svg { width: 20px; height: 20px; }
+.logo-wordmark { display: flex; flex-direction: column; line-height: 1; }
+.logo-name { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -0.3px; color: #fff; }
+.logo-name span { color: var(--fu-gold); }
+.logo-tagline { font-size: 9.5px; font-weight: 400; color: rgba(255,255,255,.42); letter-spacing: 1.2px; text-transform: uppercase; margin-top: 2px; }
+.hdr-div { width: 1px; height: 28px; background: rgba(255,255,255,.15); margin: 0 16px; }
+.hdr-app { display: flex; flex-direction: column; }
+.hdr-app-title { font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 13px; color: #fff; line-height: 1.2; }
+.hdr-app-sub { font-size: 10.5px; color: rgba(255,255,255,.4); font-weight: 300; line-height: 1.2; margin-top: 1px; }
+.hdr-pill { background: rgba(212,136,30,.15); border: 1px solid rgba(212,136,30,.3); color: var(--fu-gold); font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 600; padding: 4px 14px; border-radius: 20px; letter-spacing: .4px; }
+
+/* LAYOUT */
+.wrap { max-width: 1060px; margin: 0 auto; padding: 44px 24px 80px; }
+
+/* HERO */
+.hero { text-align: center; margin-bottom: 40px; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 7px; background: var(--fu-gold-lt); border: 1px solid rgba(212,136,30,.2); color: var(--fu-gold); font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 16px; border-radius: 20px; margin-bottom: 16px; }
+.hero h1 { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 36px; color: var(--fu-dark); letter-spacing: -0.8px; line-height: 1.2; margin-bottom: 12px; }
+.hero h1 .hi { color: var(--fu-gold); }
+.hero-desc { color: var(--muted); font-size: 15px; font-weight: 300; max-width: 480px; margin: 0 auto; line-height: 1.7; }
+
+/* TIPO CARDS */
+.type-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.tc { background: var(--surface); border: 2px solid var(--border); border-radius: 14px; padding: 20px 16px 18px; cursor: pointer; transition: border-color .2s, box-shadow .2s, transform .18s; position: relative; overflow: hidden; }
+.tc-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--border); transition: background .2s; }
+.tc:hover { border-color: var(--fu-blue); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.tc:hover .tc-bar { background: var(--fu-blue); }
+.tc.on { border-color: var(--fu-gold); background: #FFFCF5; }
+.tc.on .tc-bar { background: var(--fu-gold); }
+.tc-ico { font-size: 26px; display: block; margin-bottom: 10px; }
+.tc-num { position: absolute; top: 13px; right: 13px; background: var(--border-lt); color: var(--muted); font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 8px; transition: all .2s; }
+.tc.on .tc-num { background: var(--fu-gold); color: #fff; }
+.tc-name { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px; color: var(--fu-dark); margin-bottom: 5px; }
+.tc-desc { font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.55; }
+
+/* FORM */
+.fc { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-md); }
+.fc-head { background: var(--fu-dark); padding: 18px 28px; display: flex; align-items: center; gap: 14px; border-bottom: 3px solid var(--fu-gold); }
+.fc-head-ico { width: 40px; height: 40px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.fc-head-t { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; color: #fff; line-height: 1.2; }
+.fc-head-s { font-size: 11.5px; color: rgba(255,255,255,.45); margin-top: 3px; font-weight: 300; }
+.fc-body { padding: 26px 28px 20px; }
+.slbl { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--fu-blue); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--fu-blue-lt); display: flex; align-items: center; gap: 7px; }
+.fsec { margin-bottom: 24px; }
+.fg  { display: grid; gap: 14px; }
+.fg2 { grid-template-columns: 1fr 1fr; }
+.fg3 { grid-template-columns: 1fr 1fr 1fr; }
+.s2  { grid-column: span 2; }
+.fld { display: flex; flex-direction: column; gap: 6px; }
+label { font-family: 'Outfit', sans-serif; font-size: 11.5px; font-weight: 600; color: var(--fu-dark); letter-spacing: .1px; }
+label .req { color: var(--fu-gold); margin-left: 1px; }
+input, select { height: 46px; padding: 0 14px; border: 1.5px solid var(--border); border-radius: 9px; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text); background: #FAFBFD; transition: border-color .15s, box-shadow .15s; outline: none; -webkit-appearance: none; appearance: none; width: 100%; }
+input:focus, select:focus { border-color: var(--fu-gold); background: #fff; box-shadow: 0 0 0 3px rgba(212,136,30,.12); }
+input::placeholder { color: var(--muted-lt); font-size: 13px; }
+select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%235F7189' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; background-color: #FAFBFD; }
+
+/* CAMPO PESOS */
+.campo-peso { position: relative; }
+.peso-box { display: flex; align-items: stretch; border: 1.5px solid var(--border); border-radius: 9px; overflow: hidden; transition: border-color .15s, box-shadow .15s; background: #FAFBFD; }
+.peso-box:focus-within { border-color: var(--fu-gold); box-shadow: 0 0 0 3px rgba(212,136,30,.12); background: #fff; }
+.peso-symbol { display: flex; align-items: center; padding: 0 13px; background: var(--fu-gold-lt); border-right: 1.5px solid var(--border); font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; color: var(--fu-gold); white-space: nowrap; flex-shrink: 0; user-select: none; }
+.peso-input { border: none !important; box-shadow: none !important; border-radius: 0 9px 9px 0 !important; background: transparent !important; flex: 1; }
+.peso-preview { font-size: 11.5px; color: var(--muted-lt); margin-top: 5px; min-height: 17px; font-style: italic; transition: color .2s; }
+.peso-preview.has-val { color: var(--ok); font-style: normal; font-weight: 500; }
+.peso-preview .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); margin-right: 4px; }
+
+/* STATUS BAR */
+.sbar { margin: 0 28px 0; padding: 11px 16px; border-radius: 9px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 9px; min-height: 0; max-height: 0; overflow: hidden; transition: max-height .25s, padding .25s, margin-bottom .25s; }
+.sbar.ok  { background: var(--ok-lt);  color: var(--ok);  border: 1px solid #b2e6ce; max-height: 60px; margin-bottom: 16px; }
+.sbar.err { background: var(--err-lt); color: var(--err); border: 1px solid #f5c0bb; max-height: 60px; margin-bottom: 16px; }
+.sbar.loading { background: var(--fu-blue-lt); color: var(--fu-blue); border: 1px solid #c0d8ef; max-height: 60px; margin-bottom: 16px; }
+.spin { width: 14px; height: 14px; border: 2px solid rgba(26,77,124,.2); border-top-color: var(--fu-blue); border-radius: 50%; animation: spin .7s linear infinite; display: none; flex-shrink: 0; }
+
+/* DL CARD */
+.dl-card { margin: 0 28px 16px; background: var(--ok-lt); border: 1px solid #b2e6ce; border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.dl-card.show { opacity: 1; pointer-events: all; }
+.dl-ico { font-size: 24px; flex-shrink: 0; }
+.dl-info { flex: 1; }
+.dl-fn { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 13px; color: var(--fu-dark); }
+.dl-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.btn-dl { height: 36px; padding: 0 18px; background: var(--ok); color: #fff; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: background .18s; white-space: nowrap; }
+.btn-dl:hover { background: #0a6040; }
+
+/* FOOT BUTTONS */
+.fc-foot { padding: 16px 28px 24px; display: flex; gap: 12px; }
+.btn-gen { height: 48px; padding: 0 28px; background: var(--fu-dark); color: #fff; border: none; border-radius: 11px; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background .18s, transform .15s; letter-spacing: .2px; }
+.btn-gen:hover { background: var(--fu-blue); transform: translateY(-1px); }
+.btn-gen:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.btn-clr { height: 48px; padding: 0 22px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: 11px; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .18s; }
+.btn-clr:hover { border-color: var(--fu-blue); color: var(--fu-blue); }
+
+/* TOAST CONFIRMACION */
+.toast-overlay { position: fixed; inset: 0; background: rgba(28,43,58,.55); display: flex; align-items: center; justify-content: center; z-index: 999; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.toast-overlay.show { opacity: 1; pointer-events: all; }
+.toast-box { background: #fff; border-radius: 18px; padding: 36px 40px; max-width: 440px; width: 90%; box-shadow: 0 20px 60px rgba(28,43,58,.25); text-align: center; transform: scale(.96); transition: transform .25s; }
+.toast-overlay.show .toast-box { transform: scale(1); }
+.toast-ico { font-size: 48px; margin-bottom: 16px; display: block; }
+.toast-title { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 22px; color: var(--fu-dark); margin-bottom: 10px; }
+.toast-msg { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+.toast-num { display: inline-block; background: var(--fu-gold-lt); color: var(--fu-gold); font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 18px; padding: 6px 18px; border-radius: 30px; margin-bottom: 8px; }
+.toast-btn { height: 46px; padding: 0 32px; background: var(--fu-dark); color: #fff; border: none; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .18s; }
+.toast-btn:hover { background: var(--fu-blue); }
+
+/* HISTORIAL */
+.hist { margin-top: 32px; background: var(--surface); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
+.hist-title { background: var(--fu-dark); color: #fff; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 13px; padding: 13px 20px; display: flex; align-items: center; gap: 8px; }
+.hist-list { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.hi { background: var(--bg); border-radius: 9px; padding: 11px 14px; display: flex; align-items: center; gap: 10px; }
+.hb { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 6px; letter-spacing: .5px; white-space: nowrap; }
+.hb-c { background: var(--fu-blue-lt); color: var(--fu-blue); }
+.hb-k { background: var(--ok-lt); color: var(--ok); }
+.hb-g { background: var(--fu-gold-lt); color: #8B5A10; }
+.hn { font-weight: 600; font-size: 13px; color: var(--fu-dark); flex: 1; }
+.ht { font-size: 11.5px; color: var(--muted-lt); }
+.btn-hdl { height: 28px; padding: 0 11px; background: var(--fu-blue-lt); color: var(--fu-blue); border: none; border-radius: 6px; font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 4px; transition: all .18s; }
+.btn-hdl:hover { background: var(--fu-blue); color: #fff; }
+
+/* FOOTER */
+.page-foot { text-align: center; margin-top: 52px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted-lt); font-weight: 300; }
+.page-foot b { color: var(--fu-dark); font-weight: 600; }
+
+/* LINK EMPLEADOS */
+.emp-link { display: flex; align-items: center; gap: 10px; background: var(--fu-dark); color: rgba(255,255,255,.7); font-size: 12px; padding: 10px 20px; border-radius: 10px; text-decoration: none; transition: all .2s; margin-top: 20px; justify-content: center; }
+.emp-link:hover { background: var(--fu-blue); color: #fff; }
+
+/* ══ PQRS SECTION ══ */
+.pqrs-section { margin-top: 32px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-md); }
+.pqrs-header { background: linear-gradient(135deg, var(--fu-blue) 0%, var(--fu-dark) 100%); padding: 22px 28px; display: flex; align-items: center; gap: 16px; border-bottom: 3px solid var(--fu-gold); }
+.pqrs-header-ico { width: 44px; height: 44px; background: rgba(255,255,255,.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.pqrs-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 17px; color: #fff; }
+.pqrs-sub { font-size: 12px; color: rgba(255,255,255,.55); margin-top: 3px; }
+.pqrs-body { padding: 26px 28px 24px; }
+.pqrs-tipos { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.pqrs-tipo { padding: 8px 16px; border: 1.5px solid var(--border); border-radius: 30px; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .18s; background: var(--bg); font-family: 'Outfit', sans-serif; user-select: none; }
+.pqrs-tipo:hover { border-color: var(--fu-blue); color: var(--fu-blue); background: var(--fu-blue-lt); }
+.pqrs-tipo.sel { border-color: var(--fu-gold); color: var(--fu-gold); background: var(--fu-gold-lt); }
+.pqrs-footer-btns { display: flex; gap: 12px; margin-top: 18px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.fc, .type-row .tc { animation: fadeIn .3s ease both; }
+
+@media (max-width: 700px) {
+  .type-row, .fg2, .fg3 { grid-template-columns: 1fr; }
+  .s2 { grid-column: span 1; }
+  .hdr { padding: 0 18px; }
+  .hdr-div, .hdr-app-sub { display: none; }
+  .fc-head, .fc-body, .fc-foot { padding-left: 18px; padding-right: 18px; }
+  .sbar, .dl-card { margin-left: 18px; margin-right: 18px; }
+  .hero h1 { font-size: 26px; }
+  .wrap { padding: 28px 16px 60px; }
+  .pqrs-body { padding: 18px; }
+  .pqrs-header { padding: 18px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div style="display:flex;align-items:center;">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 3h12v3H7.5v3.5H14v3H7.5V17H4V3z" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="logo-wordmark">
+        <div class="logo-name">Fondo<span>Une</span></div>
+        <div class="logo-tagline">Fondo de empleados</div>
+      </div>
+    </div>
+    <div class="hdr-div"></div>
+    <div class="hdr-app">
+      <div class="hdr-app-title">Créditos Vivienda</div>
+      <div class="hdr-app-sub">Portal del Asociado</div>
+    </div>
+  </div>
+  <div class="hdr-pill">🏠 Asociados</div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-eyebrow">🏠 Portal de Solicitudes</div>
+    <h1>Radica tu solicitud<br><span class="hi">de crédito vivienda</span></h1>
+    <p class="hero-desc">Completa el formulario y genera tu lista de chequeo. Tu solicitud quedará registrada automáticamente para el equipo de FondoUne.</p>
+  </div>
+
+  <div class="type-row">
+    <div class="tc on" id="tc-compra" onclick="APP.selTipo('compra')">
+      <div class="tc-bar"></div>
+      <span class="tc-ico">🏡</span>
+      <div class="tc-num">14 docs</div>
+      <div class="tc-name">Compra de Vivienda</div>
+      <div class="tc-desc">Desembolso para adquisición de inmueble nuevo o usado</div>
+    </div>
+    <div class="tc" id="tc-construccion" onclick="APP.selTipo('construccion')">
+      <div class="tc-bar"></div>
+      <span class="tc-ico">🏗️</span>
+      <div class="tc-num">19 docs</div>
+      <div class="tc-name">Construcción y Mejoras</div>
+      <div class="tc-desc">Construcción, ampliación o mejoras en vivienda propia</div>
+    </div>
+    <div class="tc" id="tc-gravamen" onclick="APP.selTipo('gravamen')">
+      <div class="tc-bar"></div>
+      <span class="tc-ico">📜</span>
+      <div class="tc-num">11 docs</div>
+      <div class="tc-name">Gravamen Hipotecario</div>
+      <div class="tc-desc">Registro y pago del gravamen sobre el inmueble</div>
+    </div>
+  </div>
+
+  <div class="fc">
+    <div class="fc-head">
+      <div class="fc-head-ico" id="fIco">🏡</div>
+      <div>
+        <div class="fc-head-t" id="fTit">Compra de Vivienda</div>
+        <div class="fc-head-s" id="fSub">Completa los datos para generar la lista de chequeo</div>
+      </div>
+    </div>
+
+    <div class="fc-body">
+      <div class="fsec">
+        <div class="slbl">📋 Información del Crédito</div>
+        <div class="fg fg3">
+          <div class="fld">
+            <label>N° Radicado / Crédito <span class="req">*</span></label>
+            <input id="radicado" placeholder="Ej: CR-2025-00123" autocomplete="off">
+          </div>
+          <div class="fld">
+            <label>Fecha Límite de Documentos</label>
+            <input type="date" id="fechaLimite">
+          </div>
+          <div class="fld">
+            <label>Asesor Responsable</label>
+            <input id="asesor" placeholder="Nombre completo del asesor">
+          </div>
+        </div>
+      </div>
+
+      <div class="fsec">
+        <div class="slbl" id="titLbl">👤 Datos del Solicitante / Comprador</div>
+        <div class="fg fg2">
+          <div class="fld">
+            <label>Nombre Completo <span class="req">*</span></label>
+            <input id="nombreTitular" placeholder="Nombre completo del titular">
+          </div>
+          <div class="fld">
+            <label>Número de Cédula <span class="req">*</span></label>
+            <input id="cedula" placeholder="Ej: 1.234.567.890">
+          </div>
+          <div class="fld">
+            <label>Fecha de Expedición Cédula <span class="req">*</span></label>
+            <input type="date" id="fechaExpCedula">
+          </div>
+          <div class="fld">
+            <label>Lugar de Expedición Cédula</label>
+            <input id="lugarExpCedula" placeholder="Ej: Medellín, Antioquia">
+          </div>
+          <div class="fld">
+            <label>Teléfono de Contacto</label>
+            <input id="telefono" placeholder="Ej: 310 000 0000" maxlength="20">
+          </div>
+          <div class="fld">
+            <label>Correo Electrónico</label>
+            <input type="email" id="correo" placeholder="correo@ejemplo.com">
+          </div>
+          <div class="fld s2">
+            <label id="dirLbl">Dirección del Inmueble por Comprar</label>
+            <input id="direccion" placeholder="Ej: Calle 50 # 30-40, Medellín">
+          </div>
+          <div class="fld s2">
+            <label>RUT — Número de NIT / RUT del Asociado</label>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input id="rutTitular" placeholder="Ej: 900.123.456-7" style="flex:1">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;color:var(--muted);cursor:pointer;white-space:nowrap;">
+                <input type="checkbox" id="rutNoAplica" onchange="toggleRut(this,'rutTitular')"> No aplica / No tengo RUT
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="extraFields"></div>
+    </div>
+
+    <div class="sbar" id="sbar">
+      <div class="spin" id="spin"></div>
+      <span id="sbarTxt"></span>
+    </div>
+
+    <div class="dl-card" id="dlCard">
+      <div class="dl-ico">📄</div>
+      <div class="dl-info">
+        <div class="dl-fn" id="dlName">documento.docx</div>
+        <div class="dl-meta">Documento Word generado — listo para descargar</div>
+      </div>
+      <a class="btn-dl" id="dlBtn" href="#">⬇ Descargar</a>
+    </div>
+
+    <div class="fc-foot">
+      <button class="btn-gen" id="btnGen" onclick="APP.generar()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        Registrar y Generar Documento
+      </button>
+      <button class="btn-clr" onclick="APP.limpiar()">Limpiar campos</button>
+    </div>
+  </div>
+
+  <div class="hist" id="histSec" style="display:none">
+    <div class="hist-title">📁 Documentos Generados en esta Sesión</div>
+    <div class="hist-list" id="histList"></div>
+  </div>
+
+  <a href="portal-empleados.html" class="emp-link">
+    🔐 Acceso Portal Empleados FondoUne →
+  </a>
+
+  <!-- ══ SECCIÓN PQRS / OTRAS SOLICITUDES ══ -->
+  <div class="pqrs-section" id="pqrsSection">
+    <div class="pqrs-header">
+      <div class="pqrs-header-ico">💬</div>
+      <div>
+        <div class="pqrs-title">¿Tienes otra solicitud o inquietud?</div>
+        <div class="pqrs-sub">Cancela tu hipoteca, solicita certificados o resuelve cualquier duda con tu asesor</div>
+      </div>
+    </div>
+    <div class="pqrs-body">
+      <div class="pqrs-tipos">
+        <div class="pqrs-tipo" onclick="PQRS.selTipo(this,'credito_vivienda')">🏠 Crédito de Vivienda</div>
+        <div class="pqrs-tipo" onclick="PQRS.selTipo(this,'cancelacion_hipoteca')">📜 Cancelación de Hipoteca</div>
+        <div class="pqrs-tipo" onclick="PQRS.selTipo(this,'certificado_tributario')">🧾 Certificado Tributario</div>
+        <div class="pqrs-tipo" onclick="PQRS.selTipo(this,'paz_y_salvo')">✅ Certificado Paz y Salvo</div>
+        <div class="pqrs-tipo" onclick="PQRS.selTipo(this,'abono_libre_inversion')">💳 Abono Crédito Libre Inversión</div>
+        <div class="pqrs-tipo" onclick="PQRS.selTipo(this,'otra')">📝 Otra inquietud</div>
+      </div>
+      <input type="hidden" id="pqrsTipoSel" value="">
+
+      <div class="fg fg2" style="margin-top:18px;">
+        <div class="fld">
+          <label>Nombre Completo <span class="req">*</span></label>
+          <input id="pqrsNombre" placeholder="Tu nombre completo">
+        </div>
+        <div class="fld">
+          <label>Número de Documento <span class="req">*</span></label>
+          <input id="pqrsDocumento" placeholder="Ej: 1.234.567.890">
+        </div>
+        <div class="fld">
+          <label>Número de Contacto <span class="req">*</span></label>
+          <input id="pqrsTelefono" placeholder="Ej: 310 000 0000" maxlength="20">
+        </div>
+        <div class="fld">
+          <label>Correo Electrónico</label>
+          <input type="email" id="pqrsCorreo" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="fld s2">
+          <label>Cuéntanos tu inquietud <span class="req">*</span></label>
+          <textarea id="pqrsInquietud" rows="4" placeholder="Describe detalladamente tu solicitud o pregunta. Si requerimos más información, nos comunicaremos contigo." style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'Inter',sans-serif;font-size:14px;resize:vertical;outline:none;transition:border-color .15s;background:#FAFBFD;" onfocus="this.style.borderColor='var(--fu-gold)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+        </div>
+      </div>
+
+      <div class="sbar" id="pqrsSbar" style="margin:12px 0 0;">
+        <span id="pqrsSbarTxt"></span>
+      </div>
+
+      <div class="pqrs-footer-btns">
+        <button class="btn-gen" onclick="PQRS.enviar()" id="pqrsBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Enviar Solicitud
+        </button>
+        <button class="btn-clr" onclick="PQRS.limpiar()">Limpiar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <b>FondoUne</b> · Fondo de Empleados UNE · Créditos Vivienda · Portal del Asociado
+  </div>
+</div>
+
+<!-- TOAST CONFIRMACION -->
+<div class="toast-overlay" id="toastOverlay">
+  <div class="toast-box">
+    <span class="toast-ico">✅</span>
+    <div class="toast-title">¡Solicitud Registrada!</div>
+    <div class="toast-num" id="toastNum">#CR-000</div>
+    <div class="toast-msg">Tu solicitud ha sido guardada exitosamente en el sistema de FondoUne. El equipo de asesores podrá verla y darte seguimiento en breve.</div>
+    <button class="toast-btn" onclick="APP.cerrarToast()">Entendido</button>
+  </div>
+</div>
+
+<script>
+var APP = (function () {
+  'use strict';
+  var tipo = 'compra';
+  var hist = [];
+
+  var DB_KEY = 'fondoune_solicitudes';
+
+  /* ── Helpers ── */
+  function $id(id) { return document.getElementById(id); }
+  function val(id)  { var el = $id(id); return el ? el.value.trim() : ''; }
+
+  function numAMiles(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+  function milesANum(s) { var c = (s||'').replace(/\./g,'').replace(/[^0-9]/g,''); return c ? parseInt(c,10) : 0; }
+  function textoLegible(n) {
+    if (!n) return '';
+    if (n >= 1000000000) return (n/1000000000).toFixed(1).replace('.0','') + ' mil millones';
+    if (n >= 1000000)    return (n/1000000).toFixed(1).replace('.0','') + ' millón' + (n>=2000000?'es':'');
+    if (n >= 1000)       return (n/1000).toFixed(0) + ' mil';
+    return numAMiles(n);
+  }
+  function valPeso(id) {
+    var el = $id(id);
+    if (!el) return '';
+    var n = milesANum(el.value);
+    return n ? '$ ' + numAMiles(n) : '';
+  }
+  function fmtDate(v) {
+    if (!v) return '';
+    var p = v.split('-');
+    if (p.length === 3) return p[2]+'/'+p[1]+'/'+p[0];
+    return v;
+  }
+  function status(t, txt) {
+    var b = $id('sbar');
+    b.className = 'sbar ' + t;
+    $id('sbarTxt').textContent = txt;
+    $id('spin').style.display = t === 'loading' ? 'block' : 'none';
+  }
+
+  function activarCampoPeso(inputId, previewId) {
+    var el = $id(inputId), pv = $id(previewId);
+    if (!el) return;
+    function actualizar() {
+      var raw = el.value.replace(/\./g,'').replace(/[^0-9]/g,'');
+      var n = raw ? parseInt(raw,10) : 0;
+      el.value = n > 0 ? numAMiles(n) : '';
+      if (pv) {
+        if (n > 0) { pv.className='peso-preview has-val'; pv.innerHTML='<span class="dot"></span> '+textoLegible(n)+' de pesos'; }
+        else       { pv.className='peso-preview'; pv.innerHTML='Ingresa el valor en pesos colombianos'; }
+      }
+    }
+    el.addEventListener('input', function(){
+      var c=el.selectionStart, a=el.value.length; actualizar();
+      var d=el.value.length; try{el.setSelectionRange(c+(d-a),c+(d-a));}catch(e){}
+    });
+    el.addEventListener('keydown', function(e){
+      var allow=/[0-9]/.test(e.key)||['Backspace','Delete','ArrowLeft','ArrowRight','Tab','Home','End'].indexOf(e.key)>-1||e.ctrlKey||e.metaKey;
+      if(!allow)e.preventDefault();
+    });
+  }
+
+  /* ── Config por tipo ── */
+  var cfg = {
+    compra: {
+      ico:'🏡', tit:'Compra de Vivienda', sub:'Datos del solicitante y del vendedor',
+      titLbl:'👤 Datos del Solicitante / Comprador', dirLbl:'Dirección del Inmueble por Comprar',
+      badge:'hb-c', badgeTxt:'Compra',
+      extra: function() {
+        return '<div class="fsec"><div class="slbl">🤝 Datos del Vendedor</div>'
+          +'<div class="fg fg2">'
+          +'<div class="fld"><label>Nombre del Vendedor</label><input id="nombreVendedor" placeholder="Nombre completo del vendedor"></div>'
+          +'<div class="fld"><label>Cédula del Vendedor</label><input id="cedulaVendedor" placeholder="Ej: 1.234.567.890"></div>'
+          +'<div class="fld"><label>Fecha de Expedición Cédula Vendedor</label><input type="date" id="fechaExpCedulaVendedor"></div>'
+          +'<div class="fld"><label>Lugar de Expedición Cédula Vendedor</label><input id="lugarExpCedulaVendedor" placeholder="Ej: Bogotá, D.C."></div>'
+          +'<div class="fld s2"><label>RUT del Vendedor</label>'
+          +'<div style="display:flex;gap:10px;align-items:center;">'
+          +'<input id="rutVendedor" placeholder="Ej: 900.123.456-7" style="flex:1">'
+          +'<label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;color:var(--muted);cursor:pointer;white-space:nowrap;">'
+          +'<input type="checkbox" id="rutVendedorNoAplica" onchange="toggleRut(this,\'rutVendedor\')"> No aplica</label>'
+          +'</div></div>'
+          +'</div></div>';
+      }
+    },
+    construccion: {
+      ico:'🏗️', tit:'Construcción y Mejoras', sub:'Titular, codeudor y datos de la obra',
+      titLbl:'👤 Datos del Titular', dirLbl:'Dirección del Inmueble por Construir / Mejorar',
+      badge:'hb-k', badgeTxt:'Construcción',
+      extra: function() {
+        return '<div class="fsec"><div class="slbl">👥 Codeudor / Cónyuge (si aplica)</div>'
+          +'<div class="fg fg2">'
+          +'<div class="fld"><label>Nombre del Codeudor</label><input id="nombreCodeudor" placeholder="Nombre (si aplica)"></div>'
+          +'<div class="fld"><label>Cédula del Codeudor</label><input id="cedulaCodeudor" placeholder="Cédula (si aplica)"></div>'
+          +'</div></div>'
+          +'<div class="fsec"><div class="slbl">🔨 Datos de la Obra</div>'
+          +'<div class="fg fg2">'
+          +'<div class="fld"><label>Tipo de Obra</label>'
+          +'<select id="tipoObra"><option value="">Seleccionar tipo…</option><option>Construcción</option><option>Ampliación</option><option>Mejoras</option></select></div>'
+          +'<div class="fld"><label>Valor del Presupuesto de Obra</label>'
+          +'<div class="campo-peso"><div class="peso-box"><div class="peso-symbol">$</div><input class="peso-input" id="valorPresupuesto" placeholder="Ej: 80.000.000" inputmode="numeric" autocomplete="off"></div>'
+          +'<div class="peso-preview" id="pvPresupuesto">Ingresa el valor en pesos colombianos</div></div></div>'
+          +'</div></div>';
+      }
+    },
+    gravamen: {
+      ico:'📜', tit:'Gravamen Hipotecario', sub:'Datos del titular y de la entidad financiera',
+      titLbl:'👤 Datos del Titular del Crédito', dirLbl:'Dirección del Inmueble con Gravamen',
+      badge:'hb-g', badgeTxt:'Gravamen',
+      extra: function() {
+        return '<div class="fsec"><div class="slbl">🏦 Entidad Financiera</div>'
+          +'<div class="fg fg2">'
+          +'<div class="fld"><label>Entidad Financiera (Banco)</label>'
+          +'<select id="entidadFinanciera"><option value="">Seleccionar banco…</option><option>Bancolombia</option><option>Banco de Bogotá</option><option>Davivienda</option><option>BBVA</option><option>Banco Popular</option><option>AV Villas</option><option>Otro</option></select></div>'
+          +'<div class="fld"><label>Valor del Crédito Hipotecario</label>'
+          +'<div class="campo-peso"><div class="peso-box"><div class="peso-symbol">$</div><input class="peso-input" id="valorCredito" placeholder="Ej: 200.000.000" inputmode="numeric" autocomplete="off"></div>'
+          +'<div class="peso-preview" id="pvCredito">Ingresa el valor en pesos colombianos</div></div></div>'
+          +'</div></div>';
+      }
+    }
+  };
+
+  /* ── DB: Firebase + localStorage fallback ── */
+  function generarId() {
+    return 'SOL-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2,4).toUpperCase();
+  }
+  function firebaseActivo() { return window._fbDB && window._fbDB !== null; }
+  function guardarSolicitud(datos, callback) {
+    try { var l=JSON.parse(localStorage.getItem(DB_KEY)||'[]'); l.unshift(datos); localStorage.setItem(DB_KEY,JSON.stringify(l)); } catch(e) {}
+    if (firebaseActivo()) {
+      window._fbDB.collection('solicitudes').doc(datos.id).set(datos)
+        .then(function(){ if(callback) callback(null); })
+        .catch(function(e){ if(callback) callback(e); });
+    } else { if(callback) callback(null); }
+  }
+
+  /* ── Selección de tipo ── */
+  function selTipo(t) {
+    tipo = t;
+    ['compra','construccion','gravamen'].forEach(function(k){
+      $id('tc-'+k).classList[k===t?'add':'remove']('on');
+    });
+    var c = cfg[t];
+    $id('fIco').textContent = c.ico;
+    $id('fTit').textContent = c.tit;
+    $id('fSub').textContent = c.sub;
+    $id('titLbl').textContent = c.titLbl;
+    $id('dirLbl').textContent = c.dirLbl;
+    $id('extraFields').innerHTML = c.extra();
+    $id('sbar').className = 'sbar';
+    $id('dlCard').classList.remove('show');
+    setTimeout(function(){
+      activarCampoPeso('valorPresupuesto','pvPresupuesto');
+      activarCampoPeso('valorCredito','pvCredito');
+    },0);
+  }
+
+  function limpiar() {
+    document.querySelectorAll('input').forEach(function(i){ i.value=''; });
+    document.querySelectorAll('select').forEach(function(s){ s.selectedIndex=0; });
+    document.querySelectorAll('.peso-preview').forEach(function(p){ p.className='peso-preview'; p.innerHTML='Ingresa el valor en pesos colombianos'; });
+    $id('sbar').className='sbar';
+    $id('dlCard').classList.remove('show');
+  }
+
+  function cerrarToast() {
+    $id('toastOverlay').classList.remove('show');
+  }
+
+  function toggleRut(checkbox, inputId) {
+    var inp = $id(inputId);
+    if (!inp) return;
+    inp.disabled = checkbox.checked;
+    inp.value = checkbox.checked ? 'No aplica' : '';
+    inp.style.opacity = checkbox.checked ? '.4' : '1';
+  }
+
+  /* ── Generar ── */
+  function generar() {
+    var rad = val('radicado'), nom = val('nombreTitular'), ced = val('cedula');
+    if (!rad || !nom || !ced) { status('err','⚠ Completa los campos obligatorios: Radicado, Nombre y Cédula.'); return; }
+    $id('btnGen').disabled = true;
+    $id('dlCard').classList.remove('show');
+    status('loading','Registrando solicitud y generando documento…');
+
+    var datos = {
+      id: generarId(), radicado: rad, tipo: tipo, tipoLabel: cfg[tipo].tit,
+      nombreTitular: nom, cedula: ced,
+      fechaExpCedula: fmtDate(val('fechaExpCedula')), lugarExpCedula: val('lugarExpCedula'),
+      rutTitular: val('rutTitular'), telefono: val('telefono'), correo: val('correo'),
+      direccion: val('direccion'), fechaLimite: fmtDate(val('fechaLimite')), asesor: val('asesor'),
+      nombreVendedor: val('nombreVendedor'), cedulaVendedor: val('cedulaVendedor'),
+      fechaExpCedulaVendedor: fmtDate(val('fechaExpCedulaVendedor')),
+      lugarExpCedulaVendedor: val('lugarExpCedulaVendedor'), rutVendedor: val('rutVendedor'),
+      nombreCodeudor: val('nombreCodeudor'), cedulaCodeudor: val('cedulaCodeudor'),
+      tipoObra: val('tipoObra'), valorPresupuesto: valPeso('valorPresupuesto'),
+      entidadFinanciera: val('entidadFinanciera'), valorCredito: valPeso('valorCredito'),
+      estado: 'pendiente', fechaRegistro: new Date().toISOString(),
+      historial: [{ accion: 'Solicitud registrada por el asociado', fecha: new Date().toISOString(), usuario: 'Asociado' }]
+    };
+
+    guardarSolicitud(datos, function(err) {
+      if (err) { status('err','⚠ Error guardando en la nube, pero se guardó localmente.'); }
+      setTimeout(function(){
+        try { buildDocx(datos); }
+        catch(e) { status('err','✗ Error: '+e.message); $id('btnGen').disabled=false; }
+      }, 60);
+    });
+  }
+
+  /* ── BUILD DOCX ── */
+  function buildDocx(d) {
+    var lib = (typeof docx !== 'undefined' && docx.Document) ? docx : window;
+    if (!lib.Document) throw new Error('La librería docx no cargó correctamente.');
+    var DD=lib.Document, PK=lib.Packer, PA=lib.Paragraph, RN=lib.TextRun,
+        TB=lib.Table, TR=lib.TableRow, TC=lib.TableCell,
+        AL=lib.AlignmentType, BS=lib.BorderStyle, WT=lib.WidthType,
+        SH=lib.ShadingType, VA=lib.VerticalAlign;
+
+    var DARK='1C2B3A', BLUE='1A4D7C', GOLD='D4881E', AFL='EBF2FA', GFL='FEF5E7', WHT='FFFFFF';
+    var b1={style:BS.SINGLE,size:1,color:'C8D4E0'}, BDR={top:b1,bottom:b1,left:b1,right:b1};
+    var bn={style:BS.NONE,size:0,color:'FFFFFF'},   NBD={top:bn,bottom:bn,left:bn,right:bn};
+
+    function cell(txt,o){ o=o||{}; return new TC({borders:BDR,verticalAlign:VA.CENTER,width:o.w?{size:o.w,type:WT.DXA}:undefined,shading:o.fill?{fill:o.fill,type:SH.CLEAR}:undefined,margins:{top:80,bottom:80,left:120,right:120},children:[new PA({alignment:o.c?AL.CENTER:AL.LEFT,children:[new RN({text:txt||'',font:'Calibri',size:o.s||19,bold:o.b||false,color:o.col||'222222'})]})]}); }
+    function eCell(w){ return new TC({borders:NBD,width:{size:w,type:WT.DXA},children:[new PA({children:[new RN({text:'',font:'Calibri',size:19})]})]}); }
+    function par(txt,o){ o=o||{}; var pr={alignment:o.c?AL.CENTER:AL.LEFT,spacing:{before:o.sb||0,after:o.sa||80},children:[new RN({text:txt||'',font:'Calibri',size:o.s||20,bold:o.b||false,color:o.col||'222222',italics:o.i||false})]}; if(o.bbot)pr.border={bottom:{style:BS.SINGLE,size:6,color:GOLD}}; return new PA(pr); }
+    function secT(t){ return par(t,{b:true,s:22,col:DARK,sb:220,sa:80,bbot:true}); }
+    function bul(t){ return new PA({spacing:{before:40,after:40},indent:{left:420,hanging:200},children:[new RN({text:'• ',font:'Calibri',size:19,bold:true,color:GOLD}),new RN({text:t,font:'Calibri',size:19,color:'333333'})]}); }
+    function iRow(l,v){ return new TR({children:[cell(l,{w:3600,fill:AFL,b:true,s:19,col:DARK}),cell(v,{w:5760,s:19})]}); }
+    function sHdr(t){ return new TR({children:[new TC({columnSpan:5,borders:BDR,shading:{fill:DARK,type:SH.CLEAR},margins:{top:80,bottom:80,left:120,right:120},children:[par(t,{b:true,s:19,col:WHT})]})]}); }
+    function cRow(n,doc,obs){ return new TR({children:[cell(String(n),{w:500,c:true,s:18}),cell('Obligatorio',{w:1400,s:18,col:BLUE}),cell(doc,{w:3500,s:18}),cell(obs,{w:2800,s:18,col:'555555'}),cell('☐',{w:720,c:true,s:22})]}); }
+    function cHdr(){ return new TR({children:[cell('#',{w:500,fill:BLUE,b:true,col:WHT,c:true}),cell('Tipo',{w:1400,fill:BLUE,b:true,col:WHT}),cell('Documento Requerido',{w:3500,fill:BLUE,b:true,col:WHT}),cell('Observaciones',{w:2800,fill:BLUE,b:true,col:WHT}),cell('✓',{w:720,fill:BLUE,b:true,col:WHT,c:true})]}); }
+    function warnBox(tit,txt){ var wb={style:BS.SINGLE,size:4,color:GOLD}; return new TB({width:{size:9360,type:WT.DXA},columnWidths:[9360],rows:[new TR({children:[new TC({borders:{top:wb,bottom:wb,left:wb,right:wb},shading:{fill:'FEF5E7',type:SH.CLEAR},margins:{top:100,bottom:100,left:150,right:150},children:[par('⚠  '+tit,{b:true,s:20,col:GOLD,sa:60}),par(txt,{s:19,col:'444444'})]})]})]});  }
+    function signTbl(l,r){ return new TB({width:{size:9360,type:WT.DXA},columnWidths:[4500,360,4500],rows:[new TR({children:[cell(l,{w:4500,b:true,s:19,fill:AFL,col:DARK}),eCell(360),cell(r,{w:4500,b:true,s:19,fill:AFL,col:DARK})]}),new TR({children:[cell('',{w:4500}),eCell(360),cell('',{w:4500})]}),new TR({children:[cell('Nombre: _________________________',{w:4500,s:18}),eCell(360),cell('Nombre: _________________________',{w:4500,s:18})]}),new TR({children:[cell('CC: _______________',{w:4500,s:18}),eCell(360),cell('Fecha: _______________',{w:4500,s:18})]})]}); }
+    function obsTbl(){ return new TB({width:{size:9360,type:WT.DXA},columnWidths:[9360],rows:[new TR({children:[cell('',{w:9360})]}),new TR({children:[cell('',{w:9360})]}),new TR({children:[cell('',{w:9360})]})]}); }
+    function sp(n){ return par('',{sb:n||120,sa:0}); }
+    function pie(){ return par('FondoUne · Equipo Créditos Vivienda — Documento de uso interno y confidencial.',{s:17,i:true,col:'999999',c:true,sb:200}); }
+
+    var infoT, instr=[], rows=[], wT='', wX='';
+    var sL='Firma del Titular del Crédito', sR='Firma del Asesor Responsable';
+
+    if (tipo==='compra') {
+      sL='Firma del Solicitante / Comprador';
+      infoT=new TB({width:{size:9360,type:WT.DXA},columnWidths:[3600,5760],rows:[iRow('N° Radicado / Crédito:',d.radicado),iRow('Nombre Completo del Solicitante:',d.nombreTitular),iRow('Número de Cédula:',d.cedula),iRow('Teléfono de Contacto:',d.telefono),iRow('Correo Electrónico:',d.correo),iRow('Dirección del Inmueble:',d.direccion),iRow('Nombre del Vendedor:',d.nombreVendedor),iRow('Cédula del Vendedor:',d.cedulaVendedor),iRow('Fecha Límite de Entrega:',d.fechaLimite),iRow('Asesor Responsable:',d.asesor)]});
+      instr=['Todos los documentos deben estar legibles, vigentes y sin tachones ni enmendaduras.','Los documentos OBLIGATORIOS son indispensables para continuar con el proceso de desembolso.','Las copias de cédulas deben entregarse al 150% del tamaño original, en papel blanco.','Los certificados bancarios deben tener una vigencia máxima de 30 días.','Ante cualquier duda, comuníquese con su asesor antes de entregar los documentos.'];
+      rows=[sHdr('A. DOCUMENTOS DEL COMPRADOR / SOLICITANTE'),cRow(1,'Copia de Cédula de Ciudadanía','Ampliada al 150%, legible por ambas caras'),cRow(2,'Autorización Tratamiento de Datos','Firmada por el titular — formato de la entidad'),cRow(3,'Carta de Aprobación del Crédito','Emitida por la entidad financiera, vigente'),cRow(4,'Certificado de Cuenta Bancaria','Expedido por el banco, vigencia máx. 30 días'),cRow(5,'RUT Actualizado','Registro Único Tributario — vigencia máx. 1 año'),cRow(6,'Búsqueda Unificada de Propietario','Emitida por la entidad competente'),sHdr('B. DOCUMENTOS DEL VENDEDOR'),cRow(7,'Copia de Cédula del Vendedor','Ampliada al 150%, legible por ambas caras'),cRow(8,'RUT del Vendedor','Vigente — aplica si es persona jurídica o contribuyente'),cRow(9,'Registro Único de Proponentes / Proveedores','Si aplica según el tipo de vendedor'),sHdr('C. DOCUMENTOS DEL INMUEBLE Y ESCRITURACIÓN'),cRow(10,'Escrituras del Inmueble','Escritura pública de compraventa firmada y registrada'),cRow(11,'Formato de Control de Garantías','Formato de la entidad financiera, diligenciado'),cRow(12,'Visto Bueno / Firma de Escrituras','Aprobación del área jurídica o notarial'),sHdr('D. FORMATOS FINANCIEROS Y DE DESEMBOLSO'),cRow(13,'Formato Pagador Alterno','Diligenciado y firmado por el pagador autorizado'),cRow(14,'ZUNE — Formato Desembolso','Instrucción de desembolso completamente diligenciada')];
+    } else if (tipo==='construccion') {
+      infoT=new TB({width:{size:9360,type:WT.DXA},columnWidths:[3600,5760],rows:[iRow('N° Radicado / Crédito:',d.radicado),iRow('Nombre Completo del Titular:',d.nombreTitular),iRow('Número de Cédula:',d.cedula),iRow('Nombre del Codeudor / Cónyuge:',d.nombreCodeudor),iRow('Cédula del Codeudor:',d.cedulaCodeudor),iRow('Teléfono de Contacto:',d.telefono),iRow('Correo Electrónico:',d.correo),iRow('Dirección del Inmueble:',d.direccion),iRow('Tipo de Obra:',d.tipoObra),iRow('Valor Total del Presupuesto:',d.valorPresupuesto),iRow('Fecha Límite de Entrega:',d.fechaLimite),iRow('Asesor Responsable:',d.asesor)]});
+      instr=['Todos los documentos deben estar legibles, vigentes y sin tachones ni enmendaduras.','Las copias de cédulas deben entregarse ampliadas al 150%, en papel blanco.','La descripción y presupuesto de obra deben coincidir y reflejar fielmente el proyecto.','El contrato de obra debe estar firmado por todas las partes: propietario y contratista.','Si existen codeudores, sus documentos deben incluirse de forma completa.'];
+      rows=[sHdr('A. FORMATOS FINANCIEROS Y DE DESEMBOLSO'),cRow(1,'ZUNE — Formato de Desembolso','Instrucción de desembolso completamente diligenciada y firmada'),cRow(2,'Formato Pagador Alterno','Diligenciado y firmado por el pagador autorizado'),cRow(3,'Certificado Bancario','Certificado de cuenta activa — vigencia máx. 30 días'),cRow(4,'Formato Control de Garantías','Formato de la entidad, completamente diligenciado'),sHdr('B. DOCUMENTOS JURÍDICOS Y GARANTÍAS'),cRow(5,'Pagaré (Original 1)','Pagaré firmado en original como garantía del crédito'),cRow(6,'Pagaré (Original 2)','Segunda copia del pagaré — si la entidad lo requiere'),cRow(7,'Escrituras de Hipoteca','Escritura pública de constitución firmada ante notaría'),cRow(8,'Registro Único de Proveedores / Contratistas','Si el contratista es persona jurídica'),sHdr('C. DOCUMENTOS DE IDENTIDAD — TITULARES'),cRow(9,'Copia Cédula Titular Principal','Ampliada al 150%, legible por ambas caras'),cRow(10,'Copia Cédula Codeudor / Cónyuge','Ampliada al 150%, legible por ambas caras (si aplica)'),cRow(11,'Carta de Aprobación del Crédito','Emitida por la entidad financiera, vigente'),cRow(12,'Autorización Tratamiento de Datos / Listas','Formato firmado por cada titular'),sHdr('D. DOCUMENTOS TÉCNICOS DE LA OBRA'),cRow(13,'Descripción Detallada de la Obra','Memoria descriptiva: alcance, materiales, especificaciones técnicas'),cRow(14,'Presupuesto de Obra (Cuadro de Cantidades)','Presupuesto detallado, firmado por el profesional responsable'),cRow(15,'Contrato de Obra','Suscrito entre propietario y contratista — firmado por ambas partes'),cRow(16,'Matrícula del Arquitecto / Ingeniero','Copia de la matrícula profesional del director de obra'),sHdr('E. DOCUMENTOS DEL INMUEBLE'),cRow(17,'Registro de Matrícula Inmobiliaria','Certificado de tradición y libertad vigente — ORIP'),cRow(18,'Búsqueda Unificada del Titular / Inmueble','Confirma situación jurídica del bien y del titular'),sHdr('F. SEGUROS'),cRow(19,'Póliza de Seguro de Obra / Vivienda','Póliza vigente que cubra el período completo de ejecución')];
+      wT='IMPORTANTE — CRÉDITOS DE CONSTRUCCIÓN Y MEJORAS'; wX='Para este tipo de crédito, la entidad financiera puede realizar desembolsos parciales por etapas a medida que avanza la obra. Asegúrese de que el presupuesto y el contrato de obra estén alineados con el cronograma de pagos aprobado por la entidad.';
+    } else {
+      infoT=new TB({width:{size:9360,type:WT.DXA},columnWidths:[3600,5760],rows:[iRow('N° Radicado / Crédito:',d.radicado),iRow('Nombre Completo del Titular:',d.nombreTitular),iRow('Número de Cédula:',d.cedula),iRow('Teléfono de Contacto:',d.telefono),iRow('Correo Electrónico:',d.correo),iRow('Dirección del Inmueble:',d.direccion),iRow('Entidad Financiera (Banco):',d.entidadFinanciera),iRow('Valor del Crédito Hipotecario:',d.valorCredito),iRow('Fecha Límite de Entrega:',d.fechaLimite),iRow('Asesor Responsable:',d.asesor)]});
+      instr=['Todos los documentos deben estar legibles, vigentes y sin tachones ni enmendaduras.','Las copias de cédulas deben entregarse ampliadas al 150%, en papel blanco.','Las autorizaciones y formatos deben estar firmados en original.','Las escrituras de hipoteca deben estar firmadas y en proceso de registro ante la ORIP.'];
+      rows=[sHdr('A. DOCUMENTOS DEL TITULAR DEL CRÉDITO'),cRow(1,'Copia de la Cédula de Ciudadanía','Ampliada al 150%, legible por ambas caras'),cRow(2,'Autorización Consulta y Tratamiento de Datos','Formato de la entidad, firmado en original'),cRow(3,'Carta de Aprobación del Crédito Hipotecario','Emitida por la entidad financiera, vigente'),sHdr('B. DOCUMENTOS DE LA ENTIDAD FINANCIERA'),cRow(4,'Reporte / Extracto Bancolombia','Documento oficial que certifica el crédito'),cRow(5,'ZUNE — Formato de Desembolso Bancolombia','Instrucción de desembolso diligenciada y firmada'),cRow(6,'Formato Pagador Alterno Bancolombia','Diligenciado y firmado por el pagador autorizado'),cRow(7,'Saldo del Crédito Bancolombia','Certificado oficial del saldo vigente, expedido por el banco'),sHdr('C. ESCRITURAS E HIPOTECA'),cRow(8,'Escrituras de Hipoteca','Escritura pública de constitución, firmada ante notaría'),cRow(9,'Pagaré','Pagaré firmado en original como garantía del crédito hipotecario'),cRow(10,'Formato Control de Garantías','Formato de la entidad financiera, completamente diligenciado'),sHdr('D. VERIFICACIÓN JURÍDICA Y REGISTRAL'),cRow(11,'Búsqueda Unificada del Titular / Inmueble','Confirma situación jurídica del bien y del titular')];
+      wT='IMPORTANTE — SOBRE EL GRAVAMEN HIPOTECARIO'; wX='El gravamen hipotecario es la garantía real que respalda el crédito de vivienda. Su correcta constitución y registro ante la Oficina de Registro de Instrumentos Públicos es un requisito indispensable para que la entidad financiera proceda con el desembolso.';
+    }
+
+    var hijos=[par('FondoUne · Créditos Vivienda',{s:10,col:'AAAAAA',c:true,sa:20}),par('LISTA DE CHEQUEO — DOCUMENTOS PARA DESEMBOLSO DE CRÉDITO DE VIVIENDA',{b:true,s:26,col:DARK,c:true,sa:40}),par(cfg[tipo].tit,{s:22,col:GOLD,c:true,b:true,sa:200}),secT('1. INFORMACIÓN DEL SOLICITANTE'),infoT,sp(200),secT('2. INSTRUCCIONES GENERALES')];
+    instr.forEach(function(t){hijos.push(bul(t));});
+    hijos.push(sp(200)); hijos.push(secT('3. DOCUMENTOS REQUERIDOS'));
+    hijos.push(par('Marque ✓ cada documento a medida que lo reúna.',{s:19,i:true,sa:100,col:'555555'}));
+    hijos.push(new TB({width:{size:9360,type:WT.DXA},columnWidths:[500,1400,3500,2800,720],rows:[cHdr()].concat(rows)}));
+    if(wT){hijos.push(sp(180));hijos.push(warnBox(wT,wX));}
+    hijos.push(sp(180));hijos.push(secT('4. OBSERVACIONES ADICIONALES'));hijos.push(obsTbl());
+    hijos.push(sp(180));hijos.push(secT('5. FIRMAS Y CONFIRMACIÓN DE ENTREGA'));hijos.push(signTbl(sL,sR));
+    hijos.push(sp(180));hijos.push(pie());
+
+    var wordDoc=new DD({sections:[{properties:{page:{size:{width:12240,height:15840},margin:{top:1080,right:1080,bottom:1080,left:1080}}},children:hijos}]});
+
+    PK.toBlob(wordDoc).then(function(blob){
+      var nombres={compra:'Desembolso_Compra_Vivienda',construccion:'Construccion_Mejoras',gravamen:'Gravamen_Hipotecario'};
+      var fn=nombres[tipo]+'_'+(d.radicado||'nuevo')+'.docx';
+      var url=URL.createObjectURL(blob);
+      $id('dlBtn').href=url; $id('dlBtn').download=fn; $id('dlName').textContent=fn;
+      $id('dlCard').classList.add('show');
+      status('ok','✓ Solicitud registrada y documento generado. ¡Listo para descargar!');
+      $id('toastNum').textContent=d.id;
+      $id('toastOverlay').classList.add('show');
+      hist.unshift({badge:cfg[tipo].badge,badgeTxt:cfg[tipo].badgeTxt,nombre:d.nombreTitular,radicado:d.radicado,filename:fn,url:url,time:new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})});
+      renderHist();
+      $id('btnGen').disabled=false;
+    }).catch(function(e){ status('err','✗ Error al generar: '+e.message); $id('btnGen').disabled=false; });
+  }
+
+  function renderHist() {
+    var sec=$id('histSec'), list=$id('histList');
+    if(!hist.length){sec.style.display='none';return;}
+    sec.style.display='block';
+    list.innerHTML=hist.map(function(h){return '<div class="hi"><span class="hb '+h.badge+'">'+h.badgeTxt+'</span><span class="hn">'+h.nombre+' — '+h.radicado+'</span><span class="ht">'+h.time+'</span><a class="btn-hdl" href="'+h.url+'" download="'+h.filename+'">⬇ Descargar</a></div>';}).join('');
+  }
+
+  (function init(){
+    var fl=$id('fechaLimite');
+    if(fl){var dd=new Date();dd.setDate(dd.getDate()+15);fl.valueAsDate=dd;}
+    selTipo('compra');
+  }());
+
+  function toggleRut(checkbox, inputId) {
+    var inp = document.getElementById(inputId);
+    if (!inp) return;
+    inp.disabled = checkbox.checked;
+    inp.value = checkbox.checked ? 'No aplica' : '';
+    inp.style.opacity = checkbox.checked ? '.4' : '1';
+  }
+
+  return { selTipo:selTipo, generar:generar, limpiar:limpiar, cerrarToast:cerrarToast };
+}());
+
+/* ══ MÓDULO PQRS ══ */
+var PQRS = (function() {
+  var DB_KEY  = 'fondoune_solicitudes';
+  var PQRS_KEY = 'fondoune_pqrs';
+
+  function $id(id) { return document.getElementById(id); }
+  function val(id) { var el=$id(id); return el ? el.value.trim() : ''; }
+
+  function cargarPQRS() { try{return JSON.parse(localStorage.getItem(PQRS_KEY)||'[]');}catch(e){return [];} }
+  function guardarPQRS(d) { try{localStorage.setItem(PQRS_KEY,JSON.stringify(d));}catch(e){} }
+
+  function generarId() {
+    return 'PQRS-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).substr(2,4).toUpperCase();
+  }
+
+  function selTipo(el, tipo) {
+    document.querySelectorAll('.pqrs-tipo').forEach(function(t){ t.classList.remove('sel'); });
+    el.classList.add('sel');
+    $id('pqrsTipoSel').value = tipo;
+  }
+
+  function status(t, txt) {
+    var b = $id('pqrsSbar');
+    b.className = 'sbar ' + t;
+    $id('pqrsSbarTxt').textContent = txt;
+  }
+
+  function enviar() {
+    var nombre    = val('pqrsNombre');
+    var documento = val('pqrsDocumento');
+    var telefono  = val('pqrsTelefono');
+    var tipoSel   = val('pqrsTipoSel');
+    var inquietud = val('pqrsInquietud');
+
+    if (!nombre || !documento || !telefono) {
+      status('err','⚠ Completa los campos obligatorios: Nombre, Documento y Teléfono.');
+      return;
+    }
+    if (!tipoSel) {
+      status('err','⚠ Selecciona el tipo de solicitud (botones de arriba).');
+      return;
+    }
+    if (!inquietud) {
+      status('err','⚠ Por favor describe tu inquietud o solicitud.');
+      return;
+    }
+
+    var tiposLabel = {
+      'credito_vivienda': 'Crédito de Vivienda',
+      'cancelacion_hipoteca': 'Cancelación de Hipoteca',
+      'certificado_tributario': 'Certificado Tributario',
+      'paz_y_salvo': 'Certificado de Paz y Salvo',
+      'abono_libre_inversion': 'Abono Crédito Libre Inversión',
+      'otra': 'Otra inquietud'
+    };
+
+    var registro = {
+      id: generarId(),
+      tipo: 'pqrs', tipoSolicitud: tipoSel,
+      tipoLabel: tiposLabel[tipoSel] || tipoSel,
+      nombre: nombre, documento: documento, telefono: telefono,
+      correo: val('pqrsCorreo'), inquietud: inquietud,
+      estado: 'pendiente', fechaRegistro: new Date().toISOString(),
+      historial: [{ accion: 'Solicitud PQRS registrada por el asociado', fecha: new Date().toISOString(), usuario: 'Asociado' }]
+    };
+
+    // Guardar en localStorage como respaldo
+    try {
+      var db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+      db.unshift(registro); localStorage.setItem(DB_KEY, JSON.stringify(db));
+    } catch(e) {}
+
+    // Guardar en Firebase si está activo
+    if (window._fbDB) {
+      window._fbDB.collection('solicitudes').doc(registro.id).set(registro)
+        .catch(function(e) { console.warn('Firebase PQRS error:', e); });
+    }
+
+    status('ok','✅ ¡Solicitud enviada! Tu ID de seguimiento es: ' + registro.id + '. Nos comunicaremos contigo a la brevedad.');
+    $id('pqrsBtn').disabled = true;
+    setTimeout(function() { limpiar(); $id('pqrsBtn').disabled = false; }, 4000);
+  }
+
+  function limpiar() {
+    ['pqrsNombre','pqrsDocumento','pqrsTelefono','pqrsCorreo','pqrsInquietud'].forEach(function(id){
+      var el=$id(id); if(el) el.value='';
+    });
+    $id('pqrsTipoSel').value='';
+    document.querySelectorAll('.pqrs-tipo').forEach(function(t){ t.classList.remove('sel'); });
+    $id('pqrsSbar').className='sbar';
+  }
+
+  return { selTipo:selTipo, enviar:enviar, limpiar:limpiar };
+}());
+</script>
+</body>
+</html>
