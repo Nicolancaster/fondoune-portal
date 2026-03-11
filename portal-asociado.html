@@ -23,6 +23,7 @@ var FIREBASE_CONFIG = {
   messagingSenderId: "901082593837",
   appId:             "1:901082593837:web:91292ed594e171715fd6a4"
 };
+
 /* Inicializar Firebase si la config es válida */
 window._fbDB = null;
 (function() {
@@ -210,7 +211,9 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeInField { from { opacity:0; transform:translateY(-6px); max-height:0; } to { opacity:1; transform:translateY(0); max-height:200px; } }
 .fc, .type-row .tc { animation: fadeIn .3s ease both; }
+#fld-otroBanco { overflow: hidden; }
 
 @media (max-width: 700px) {
   .type-row, .fg2, .fg3 { grid-template-columns: 1fr; }
@@ -577,7 +580,57 @@ var APP = (function () {
         return '<div class="fsec"><div class="slbl">🏦 Entidad Financiera</div>'
           +'<div class="fg fg2">'
           +'<div class="fld"><label>Entidad Financiera (Banco)</label>'
-          +'<select id="entidadFinanciera"><option value="">Seleccionar banco…</option><option>Bancolombia</option><option>Banco de Bogotá</option><option>Davivienda</option><option>BBVA</option><option>Banco Popular</option><option>AV Villas</option><option>Otro</option></select></div>'
+          +'<select id="entidadFinanciera" onchange="toggleOtroBanco(this)">'
+          +'<option value="">Seleccionar banco…</option>'
+          +'<optgroup label="🏦 Bancos Tradicionales">'
+          +'<option>Bancolombia</option>'
+          +'<option>Banco de Bogotá</option>'
+          +'<option>Davivienda</option>'
+          +'<option>BBVA Colombia</option>'
+          +'<option>Banco Popular</option>'
+          +'<option>AV Villas</option>'
+          +'<option>Banco de Occidente</option>'
+          +'<option>Banco Caja Social</option>'
+          +'<option>Scotiabank Colpatria</option>'
+          +'<option>Citibank Colombia</option>'
+          +'<option>GNB Sudameris</option>'
+          +'<option>Banco Agrario de Colombia</option>'
+          +'<option>Banco WWB</option>'
+          +'<option>Banco Falabella</option>'
+          +'<option>Banco Pichincha</option>'
+          +'<option>Banco Finandina</option>'
+          +'<option>Banco Serfinanza</option>'
+          +'<option>Banco Multibank</option>'
+          +'<option>Banco Coopcentral</option>'
+          +'<option>Itaú Colombia</option>'
+          +'<option>Bancamía</option>'
+          +'<option>Credifamilia</option>'
+          +'</optgroup>'
+          +'<optgroup label="📱 Neobancos y Bancos Digitales">'
+          +'<option>Nequi</option>'
+          +'<option>Daviplata</option>'
+          +'<option>Lulo Bank</option>'
+          +'<option>Nubank Colombia</option>'
+          +'<option>Rappipay</option>'
+          +'<option>Movii</option>'
+          +'<option>Iris (Coopcentral)</option>'
+          +'<option>Powwi</option>'
+          +'<option>Tpaga</option>'
+          +'</optgroup>'
+          +'<optgroup label="🏢 Cooperativas y Fondos">'
+          +'<option>Confiar Cooperativa</option>'
+          +'<option>Coofinep</option>'
+          +'<option>Coltefinanciera</option>'
+          +'<option>Juriscoop</option>'
+          +'<option>Cotrafa Cooperativa Financiera</option>'
+          +'<option>CFA Cooperativa Financiera</option>'
+          +'</optgroup>'
+          +'<optgroup label="➕ Otro">'
+          +'<option value="Otro">Otro banco / entidad…</option>'
+          +'</optgroup>'
+          +'</select></div>'
+          +'<div class="fld" id="fld-otroBanco" style="display:none;"><label>Especifica el banco o entidad <span style="color:var(--gold)">*</span></label>'
+          +'<input id="otroBanco" placeholder="Ej: Cooperativa La Equidad, Fondo XYZ…"></div>'
           +'<div class="fld"><label>Valor del Crédito Hipotecario</label>'
           +'<div class="campo-peso"><div class="peso-box"><div class="peso-symbol">$</div><input class="peso-input" id="valorCredito" placeholder="Ej: 200.000.000" inputmode="numeric" autocomplete="off"></div>'
           +'<div class="peso-preview" id="pvCredito">Ingresa el valor en pesos colombianos</div></div></div>'
@@ -652,7 +705,7 @@ var APP = (function () {
       lugarExpCedulaVendedor: val('lugarExpCedulaVendedor'), rutVendedor: val('rutVendedor'),
       nombreCodeudor: val('nombreCodeudor'), cedulaCodeudor: val('cedulaCodeudor'),
       tipoObra: val('tipoObra'), valorPresupuesto: valPeso('valorPresupuesto'),
-      entidadFinanciera: val('entidadFinanciera'), valorCredito: valPeso('valorCredito'),
+      entidadFinanciera: (val('entidadFinanciera')==='Otro' ? (val('otroBanco')||'Otro') : val('entidadFinanciera')), valorCredito: valPeso('valorCredito'),
       estado: 'pendiente', fechaRegistro: new Date().toISOString(),
       historial: [{ accion: 'Solicitud registrada por el asociado', fecha: new Date().toISOString(), usuario: 'Asociado' }]
     };
@@ -765,6 +818,17 @@ function toggleRut(checkbox, inputId) {
   inp.value = checkbox.checked ? 'No aplica' : '';
   inp.style.opacity = checkbox.checked ? '.4' : '1';
   inp.style.background = checkbox.checked ? '#f0f0f0' : '';
+}
+
+/* ── toggleOtroBanco — muestra/oculta campo cuando selecciona "Otro" ── */
+function toggleOtroBanco(select) {
+  var fld = document.getElementById('fld-otroBanco');
+  var inp = document.getElementById('otroBanco');
+  if (!fld) return;
+  var esOtro = select.value === 'Otro';
+  fld.style.display = esOtro ? 'block' : 'none';
+  fld.style.animation = esOtro ? 'fadeInField .25s ease both' : '';
+  if (!esOtro && inp) inp.value = '';
 }
 
 /* ══ MÓDULO PQRS ══ */
