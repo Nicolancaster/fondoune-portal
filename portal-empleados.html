@@ -847,9 +847,18 @@ tbody tr:nth-child(n+6){ animation-delay: .18s; }
       🔒 Área restringida · Solo personal autorizado FondoUne
     </div>
   </div>
+</div>
 
-  <!-- ══ PANEL RECUPERAR CONTRASEÑA ══ -->
-  <div class="login-card recover-panel" id="recoverPanel">
+<!-- ══════════════════════════════════════
+     OVERLAY RECUPERAR CONTRASEÑA (independiente)
+     ══════════════════════════════════════ -->
+<div class="login-overlay" id="recoverOverlay" style="display:none;z-index:10000;">
+  <div class="login-bg">
+    <div class="login-bg-grid"></div>
+    <div class="login-bg-circle"></div>
+    <div class="login-bg-circle"></div>
+  </div>
+  <div class="login-card" id="recoverPanel" style="max-height:90vh;overflow-y:auto;">
     <div class="login-logo">
       <div class="login-logo-mark">
         <svg viewBox="0 0 20 20" fill="none"><path d="M4 3h12v3H7.5v3.5H14v3H7.5V17H4V3z" fill="#fff"/></svg>
@@ -921,16 +930,17 @@ tbody tr:nth-child(n+6){ animation-delay: .18s; }
       <div class="login-error" id="recoverError2" style="margin-bottom:12px;">
         <span>⚠</span><span id="recoverError2Msg"></span>
       </div>
-      <div style="background:rgba(13,122,78,.15);border:1px solid rgba(13,122,78,.3);border-radius:9px;padding:10px 14px;font-size:12.5px;color:#6EE7B7;margin-bottom:16px;display:none;" id="recoverOk">
-        ✅ Contraseña restablecida correctamente. Ya puedes iniciar sesión.
+      <div style="background:rgba(13,122,78,.2);border:1px solid rgba(13,122,78,.4);border-radius:9px;padding:10px 14px;font-size:12.5px;color:#6EE7B7;margin-bottom:16px;display:none;" id="recoverOk">
+        ✅ Contraseña restablecida correctamente. Volviendo al inicio de sesión…
       </div>
       <button class="login-btn" onclick="ejecutarRestablecimiento()">🔑 Restablecer contraseña</button>
     </div>
 
-    <div class="login-footer" style="margin-top:20px;">
+    <div class="login-footer" style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07);">
       Los cambios se guardan localmente en este navegador.
     </div>
   </div>
+</div>
 
 <!-- OVERLAY para sidebar en móvil -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebarMovil()"></div>
@@ -2528,25 +2538,28 @@ function confirmarEliminarUsuario(login) {
    ═══════════════════════════════════════════════════════ */
 
 function mostrarRecuperar() {
-  document.getElementById('loginCard').style.display = 'none';
-  var panel = document.getElementById('recoverPanel');
-  panel.style.display = 'flex';
-  panel.style.flexDirection = 'column';
-  // Reset estado
+  // Mostrar overlay independiente de recuperación
+  var ov = document.getElementById('recoverOverlay');
+  ov.style.display = 'flex';
+  ov.style.opacity = '0';
+  setTimeout(function(){ ov.style.opacity = '1'; ov.style.transition = 'opacity .3s ease'; }, 10);
+
+  // Reset completo del formulario
   document.getElementById('recoverStep1').style.display = 'block';
   document.getElementById('recoverStep2').style.display = 'none';
   document.getElementById('recAdminUser').value = '';
   document.getElementById('recAdminPass').value = '';
   document.getElementById('recoverOk').style.display = 'none';
-  var err1 = document.getElementById('recoverError1');
-  err1.classList.remove('show');
-  setTimeout(function(){ document.getElementById('recAdminUser').focus(); }, 100);
+  document.getElementById('recoverError1').classList.remove('show');
+  document.getElementById('recoverError2').classList.remove('show');
+  setTimeout(function(){ document.getElementById('recAdminUser').focus(); }, 200);
 }
 
 function ocultarRecuperar() {
-  document.getElementById('recoverPanel').style.display = 'none';
-  document.getElementById('loginCard').style.display = 'flex';
-  document.getElementById('loginCard').style.flexDirection = 'column';
+  var ov = document.getElementById('recoverOverlay');
+  ov.style.opacity = '0';
+  ov.style.transition = 'opacity .3s ease';
+  setTimeout(function(){ ov.style.display = 'none'; }, 300);
 }
 
 function verificarAdminRecuperar() {
@@ -2611,7 +2624,7 @@ function ejecutarRestablecimiento() {
     okBox.style.display = 'block';
     document.getElementById('recNewPass').value = '';
     document.getElementById('recConfPass').value = '';
-    // Volver al login tras 2.5s
+    // Cerrar overlay y volver al login tras 2.5s
     setTimeout(ocultarRecuperar, 2500);
   });
 }
