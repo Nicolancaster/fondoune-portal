@@ -71,6 +71,7 @@ window._fbIniciado = false;
   --info:    #E8511A;
   --info-lt: #FFF0EA;
   --sidebar-w: 240px;
+
   --shadow-sm: 0 1px 4px rgba(45,26,14,.08);
   --shadow-md: 0 4px 16px rgba(45,26,14,.10);
   --shadow-lg: 0 8px 32px rgba(45,26,14,.15);
@@ -220,7 +221,9 @@ body::after {
 .sf-text{font-size:10.5px;color:rgba(255,255,255,.3);text-align:center;line-height:1.5;}
 
 /* ══ CONTENT ══ */
-.content{flex:1;overflow-y:auto;padding:28px 28px 60px;min-width:0;}
+.content{flex:1;overflow-y:auto;padding:28px 28px 60px;min-width:0;background:var(--bg);}
+/* Ocultar botón hamburguesa en desktop — se muestra solo en el media query móvil */
+.mobile-menu-btn{display:none;}
 
 /* ══ PANEL / PAGE ══ */
 .panel{display:none;}
@@ -797,6 +800,7 @@ tbody tr:nth-child(n+6){ animation-delay: .18s; }
     overscroll-behavior: contain;
     padding: 16px 14px calc(20px + env(safe-area-inset-bottom, 0px));
     scroll-padding-top: 12px;
+    background: var(--bg);
   }
 
   /* ── Sidebar — cajón deslizable glass oscuro ── */
@@ -895,7 +899,7 @@ tbody tr:nth-child(n+6){ animation-delay: .18s; }
   }
 
   /* ── Topbar simplificado en móvil ── */
-  .mobile-menu-btn { display: flex !important; margin-right: 8px; }
+  .mobile-menu-btn { display: flex; margin-right: 8px; }
   .topbar-div, .topbar-title, .topbar-brand,
   #fbStatusBar, .topbar-link[href="portal-asociado.html"] { display: none !important; }
   .logo .logo-name { font-size: 15px; }
@@ -1421,7 +1425,7 @@ tbody tr:nth-child(n+6){ animation-delay: .18s; }
 <!-- TOPBAR -->
 <div class="topbar">
   <!-- Botón menú hamburguesa solo visible en móvil -->
-  <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleSidebarMovil()" style="display:none;" aria-label="Menú">
+  <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleSidebarMovil()" aria-label="Menú">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
   <a href="portal-asociado.html" class="logo topbar-brand">
@@ -2432,9 +2436,15 @@ function actualizarContadores(){
 
 /* ═══ DASHBOARD ═══ */
 function renderDashboard(){
+  var dashFecha = $id('dash-fecha');
+  if (!dashFecha) {
+    // El DOM aún no está listo (puede pasar en Safari iOS con Firebase) — reintentar
+    setTimeout(renderDashboard, 150);
+    return;
+  }
   var db=cargarDB();
   var now=new Date();
-  $id('dash-fecha').textContent='Actualizado: '+now.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  dashFecha.textContent='Actualizado: '+now.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
   var pend=db.filter(function(s){return s.estado==='pendiente';}).length;
   var apro=db.filter(function(s){return s.estado==='aprobado';}).length;
