@@ -1675,23 +1675,31 @@ function intentarLogin() {
   spinner.style.display = 'block';
   btnTxt.textContent = 'Verificando…';
 
-  // Hash de la contraseña ingresada y validar
   sha256(password).then(function(hashIngresado) {
     var datosUsuario = USUARIOS[usuario];
     var accesoCorrecto = datosUsuario && datosUsuario.hash === hashIngresado;
 
-    // Simulamos un pequeño delay para evitar ataques de timing
     setTimeout(function() {
       if (accesoCorrecto) {
         loginExitoso(usuario, datosUsuario);
       } else {
         loginFallido(usuario);
-        btn.disabled = false;
-        spinner.style.display = 'none';
-        btnTxt.textContent = '🔐 Ingresar al Portal';
+        resetLoginBtn();
       }
     }, 700);
+  }).catch(function() {
+    resetLoginBtn();
   });
+}
+
+/* Centraliza el reset del botón para usarlo desde cualquier punto */
+function resetLoginBtn() {
+  var btn    = document.getElementById('loginBtn');
+  var spinner= document.getElementById('loginSpinner');
+  var btnTxt = document.getElementById('loginBtnTxt');
+  if (btn)    { btn.disabled = false; }
+  if (spinner){ spinner.style.display = 'none'; }
+  if (btnTxt) { btnTxt.textContent = 'Ingresar al Portal'; }
 }
 
 function loginExitoso(usuario, datosUsuario) {
@@ -1733,22 +1741,31 @@ function cerrarSesion() {
   if (!confirm('¿Cerrar sesión? Serás redirigido a la pantalla de inicio.')) return;
   registrarAudit('Cierre de sesión', { id: 'auth', radicado: 'LOGOUT', nombreTitular: document.getElementById('sessionUser').textContent });
   localStorage.removeItem(SEC.SESS_KEY);
+
+  // ── Resetear formulario de login completamente ──
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
   document.getElementById('loginError').classList.remove('show');
+  document.getElementById('loginBlocked').classList.remove('show');
+
+  // ── RESET CRÍTICO: restaurar botón y spinner al estado inicial ──
+  resetLoginBtn();
+
   intentosFallidos = 0;
   actualizarDots();
-  // Asegurarse que recoverOverlay también esté oculto
+
+  // Ocultar recover overlay por si estaba visible
   var recOv = document.getElementById('recoverOverlay');
   recOv.classList.add('oculto');
   recOv.style.opacity = '';
+
   // Mostrar login con animación
   var overlay = document.getElementById('loginOverlay');
   overlay.classList.remove('oculto');
   overlay.style.opacity = '0';
   overlay.style.transition = 'opacity .35s ease';
   setTimeout(function() { overlay.style.opacity = '1'; }, 10);
-  document.getElementById('loginUser').focus();
+  setTimeout(function() { document.getElementById('loginUser').focus(); }, 350);
 }
 
 /* ── INIT SEGURIDAD — movido al final del script principal ── */
@@ -1779,6 +1796,85 @@ var solicitudActual = null;
 var paginaActual = 1;
 var POR_PAGINA = 10;
 var notificacionesLeidas = JSON.parse(localStorage.getItem('fu_notif_leidas') || '[]');
+
+/* ═══════════════════════════════════════════════════════
+   🔒 CAPA DE SEGURIDAD — Protecciones activas
+   ═══════════════════════════════════════════════════════ */
+
+/* ── 1. Sanitizador XSS — escapa HTML antes de inyectar al DOM ── */
+function esc(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+}
+
+/* ── 2. Timeout de inactividad — cierra sesión automáticamente ── */
+var SEC_INACTIVIDAD_MIN = 30; // minutos sin actividad
+var _inactividadTimer = null;
+
+function reiniciarTimerInactividad() {
+  clearTimeout(_inactividadTimer);
+  _inactividadTimer = setTimeout(function() {
+    var sess = localStorage.getItem(SEC.SESS_KEY);
+    if (!sess) return; // ya cerró sesión
+    registrarAudit('Sesión cerrada por inactividad', { id: 'auth', radicado: 'TIMEOUT', nombreTitular: 'Sistema' });
+    localStorage.removeItem(SEC.SESS_KEY);
+    resetLoginBtn();
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginError').classList.remove('show');
+    intentosFallidos = 0;
+    actualizarDots();
+    var recOv = document.getElementById('recoverOverlay');
+    recOv.classList.add('oculto');
+    var overlay = document.getElementById('loginOverlay');
+    overlay.classList.remove('oculto');
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity .35s ease';
+    setTimeout(function() { overlay.style.opacity = '1'; }, 10);
+    showToast('⏱ Sesión cerrada por inactividad (' + SEC_INACTIVIDAD_MIN + ' min)', '🔒');
+    setTimeout(function() { document.getElementById('loginUser').focus(); }, 400);
+  }, SEC_INACTIVIDAD_MIN * 60 * 1000);
+}
+
+// Reiniciar el timer en cualquier interacción del usuario
+['click','keydown','mousemove','touchstart','scroll'].forEach(function(ev) {
+  document.addEventListener(ev, reiniciarTimerInactividad, { passive: true });
+});
+
+/* ── 3. Protección contra múltiples pestañas con sesiones distintas ── */
+window.addEventListener('storage', function(e) {
+  if (e.key === SEC.SESS_KEY && e.newValue === null) {
+    // La sesión fue eliminada en otra pestaña
+    var overlay = document.getElementById('loginOverlay');
+    if (overlay && overlay.classList.contains('oculto')) {
+      resetLoginBtn();
+      overlay.classList.remove('oculto');
+      overlay.style.opacity = '1';
+    }
+  }
+});
+
+/* ── 4. Validar que el usuario sigue en USUARIOS antes de cada acción sensible ── */
+function sesionValida() {
+  try {
+    var sess = JSON.parse(localStorage.getItem(SEC.SESS_KEY) || 'null');
+    if (!sess) return false;
+    if (new Date().getTime() > sess.expira) { localStorage.removeItem(SEC.SESS_KEY); return false; }
+    // Verificar que el usuario sigue existiendo
+    if (!USUARIOS[sess.usuario]) return false;
+    return sess;
+  } catch(e) { return false; }
+}
+
+/* ── 5. Headers de seguridad via meta tags ── */
+// (Los headers HTTP reales deben configurarse en el servidor/GitHub Pages)
+// Aquí establecemos lo que se puede desde el cliente
 
 /* ═══ INDICADOR FIREBASE ═══ */
 function mostrarEstadoFirebase() {
@@ -2118,16 +2214,16 @@ function renderTabla(){
   if(!pagina.length){ body.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="ei">🔍</div><h3>Sin resultados</h3><p>No hay solicitudes que coincidan con los filtros.</p></div></td></tr>'; renderPaginacion(0); return; }
   body.innerHTML=pagina.map(function(s){
     return '<tr>'
-      +'<td><span class="tr-id">'+s.id+'</span><div class="tr-sub">'+s.radicado+'</div></td>'
-      +'<td><div class="tr-name">'+s.nombreTitular+'</div><div class="tr-sub">CC: '+s.cedula+'</div></td>'
+      +'<td><span class="tr-id">'+esc(s.id)+'</span><div class="tr-sub">'+esc(s.radicado)+'</div></td>'
+      +'<td><div class="tr-name">'+esc(s.nombreTitular)+'</div><div class="tr-sub">CC: '+esc(s.cedula)+'</div></td>'
       +'<td>'+badgeTipo(s.tipo)+'</td>'
       +'<td style="font-size:12px;color:var(--muted)">'+fmtFechaCorta(s.fechaRegistro)+'</td>'
       +'<td>'+selectEstado(s)+'</td>'
-      +'<td style="font-size:12.5px;color:var(--muted)">'+(s.asesor||'—')+'</td>'
+      +'<td style="font-size:12.5px;color:var(--muted)">'+esc(s.asesor||'—')+'</td>'
       +'<td><div class="row-actions">'
-      +'<button class="act-btn" title="Ver detalle" onclick="verDetalle(\''+s.id+'\')">👁</button>'
-      +'<button class="act-btn" title="Generar Word" onclick="generarDocx(\''+s.id+'\')">📄</button>'
-      +'<button class="act-btn danger" title="Eliminar" onclick="eliminarSolicitud(\''+s.id+'\')">🗑</button>'
+      +'<button class="act-btn" title="Ver detalle" onclick="verDetalle(\''+esc(s.id)+'\')">👁</button>'
+      +'<button class="act-btn" title="Generar Word" onclick="generarDocx(\''+esc(s.id)+'\')">📄</button>'
+      +'<button class="act-btn danger" title="Eliminar" onclick="eliminarSolicitud(\''+esc(s.id)+'\')">🗑</button>'
       +'</div></td>'
       +'</tr>';
   }).join('');
@@ -2171,12 +2267,12 @@ function renderTablaSimple(bodyId,datos){
   if(!datos.length){ body.innerHTML='<tr><td colspan="6"><div class="empty-state"><div class="ei">📭</div><h3>Sin registros</h3><p>No hay solicitudes en esta categoría.</p></div></td></tr>'; return; }
   body.innerHTML=datos.map(function(s){
     return '<tr>'
-      +'<td><span class="tr-id">'+s.id+'</span><div class="tr-sub">'+s.radicado+'</div></td>'
-      +'<td><div class="tr-name">'+s.nombreTitular+'</div><div class="tr-sub">CC: '+s.cedula+'</div></td>'
+      +'<td><span class="tr-id">'+esc(s.id)+'</span><div class="tr-sub">'+esc(s.radicado)+'</div></td>'
+      +'<td><div class="tr-name">'+esc(s.nombreTitular)+'</div><div class="tr-sub">CC: '+esc(s.cedula)+'</div></td>'
       +'<td>'+badgeTipo(s.tipo)+'</td>'
       +'<td style="font-size:12px;color:var(--muted)">'+fmtFechaCorta(s.fechaRegistro)+'</td>'
       +'<td>'+selectEstado(s)+'</td>'
-      +'<td><div class="row-actions"><button class="act-btn" onclick="verDetalle(\''+s.id+'\')">👁</button><button class="act-btn" onclick="generarDocx(\''+s.id+'\')">📄</button></div></td>'
+      +'<td><div class="row-actions"><button class="act-btn" onclick="verDetalle(\''+esc(s.id)+'\')">👁</button><button class="act-btn" onclick="generarDocx(\''+esc(s.id)+'\')">📄</button></div></td>'
       +'</tr>';
   }).join('');
 }
@@ -2189,11 +2285,11 @@ function renderAuditoria(){
   body.innerHTML=audit.map(function(a){
     return '<div class="hist-entry">'
       +'<div class="he-head">'
-      +'<span class="badge badge-compra">'+a.usuario+'</span>'
-      +'<span style="font-size:12px;font-weight:600;color:var(--text)">'+a.accion+'</span>'
+      +'<span class="badge badge-compra">'+esc(a.usuario)+'</span>'
+      +'<span style="font-size:12px;font-weight:600;color:var(--text)">'+esc(a.accion)+'</span>'
       +'<span style="margin-left:auto;font-size:11.5px;color:var(--muted-lt)">'+fmtFecha(a.fecha)+'</span>'
       +'</div>'
-      +'<div class="he-body">Solicitud: <b>'+a.radicado+'</b> — '+a.nombreTitular+'</div>'
+      +'<div class="he-body">Solicitud: <b>'+esc(a.radicado)+'</b> — '+esc(a.nombreTitular)+'</div>'
       +'</div>';
   }).join('');
 }
@@ -2213,13 +2309,13 @@ function renderPQRS(){
       'abono_libre_inversion':'badge-construccion','otra':'badge-pendiente'
     };
     var cls=tiposBadge[s.tipoSolicitud]||'badge-pendiente';
-    var resumen=(s.inquietud||'').substring(0,60)+(s.inquietud&&s.inquietud.length>60?'…':'');
+    var resumen=esc((s.inquietud||'').substring(0,60)+(s.inquietud&&s.inquietud.length>60?'…':''));
     return '<tr>'
-      +'<td><span class="tr-id">'+s.id+'</span></td>'
-      +'<td><div class="tr-name">'+(s.nombre||s.nombreTitular||'—')+'</div><div class="tr-sub">Doc: '+(s.documento||s.cedula||'—')+'</div></td>'
-      +'<td><span class="badge '+cls+'">'+(s.tipoLabel||s.tipoSolicitud||'—')+'</span></td>'
+      +'<td><span class="tr-id">'+esc(s.id)+'</span></td>'
+      +'<td><div class="tr-name">'+esc(s.nombre||s.nombreTitular||'—')+'</div><div class="tr-sub">Doc: '+esc(s.documento||s.cedula||'—')+'</div></td>'
+      +'<td><span class="badge '+cls+'">'+esc(s.tipoLabel||s.tipoSolicitud||'—')+'</span></td>'
       +'<td style="max-width:200px;font-size:12px;color:var(--muted)">'+resumen+'</td>'
-      +'<td style="font-size:12.5px">'+(s.telefono||'—')+'<br><span style="color:var(--muted);font-size:11px">'+(s.correo||'')+'</span></td>'
+      +'<td style="font-size:12.5px">'+esc(s.telefono||'—')+'<br><span style="color:var(--muted);font-size:11px">'+esc(s.correo||'')+'</span></td>'
       +'<td style="font-size:12px;color:var(--muted)">'+fmtFechaCorta(s.fechaRegistro)+'</td>'
       +'<td>'+selectEstado(s)+'</td>'
       +'</tr>';
