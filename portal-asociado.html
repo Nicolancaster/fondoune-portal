@@ -1243,8 +1243,7 @@ var PQRS = (function() {
 
   <!-- Categorías -->
   <div class="faq-cats" id="faqCats">
-    <div class="faq-cat active" onclick="filtrarCategoria('todas', this)">Todas</div>
-    <div class="faq-cat" onclick="filtrarCategoria('documentos', this)">📄 Documentos</div>
+    <div class="faq-cat active" onclick="filtrarCategoria('documentos', this)">📄 Documentos</div>
     <div class="faq-cat" onclick="filtrarCategoria('compra', this)">🏡 Compra</div>
     <div class="faq-cat" onclick="filtrarCategoria('construccion', this)">🏗️ Construcción</div>
     <div class="faq-cat" onclick="filtrarCategoria('gravamen', this)">🏦 Gravamen</div>
@@ -1259,9 +1258,9 @@ var PQRS = (function() {
     <div class="faq-footer-txt">
       ¿No encontraste tu respuesta? Escríbenos a
       <a href="mailto:fondoune@fondoune.com">fondoune@fondoune.com</a><br>
-      o llámanos al <a href="tel:3022287890">302 2287890</a>
+      o llámanos al <a href="tel:3003528156">300 3528156</a>
     </div>
-    <a href="https://wa.me/573022287890?text=Hola%2C%20necesito%20ayuda%20con%20mi%20solicitud%20de%20cr%C3%A9dito%20vivienda" 
+    <a href="https://wa.me/573003528156?text=Hola%2C%20necesito%20ayuda%20con%20mi%20solicitud%20de%20cr%C3%A9dito%20vivienda" 
        target="_blank" rel="noopener" class="faq-wa-btn">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
@@ -1318,7 +1317,7 @@ var FAQ_DATA = [
   { cat:'proceso', ico:'⚙️', q:'¿Cuánto tiempo tarda el proceso de aprobación?',
     a:'El tiempo estimado es: <ul><li><strong>Revisión de documentos:</strong> 2 a 5 días hábiles</li><li><strong>Estudio de crédito:</strong> 3 a 8 días hábiles</li><li><strong>Aprobación y firma:</strong> 2 a 4 días hábiles</li><li><strong>Desembolso:</strong> 1 a 3 días hábiles</li></ul>El proceso total suele durar entre <strong>2 y 4 semanas</strong> si los documentos están completos.' },
   { cat:'proceso', ico:'⚙️', q:'¿Cómo hago seguimiento a mi solicitud?',
-    a:'Una vez radiques tu solicitud en este portal, recibirás un <strong>número de radicado</strong>. Con ese número puedes comunicarte al correo fondoune@fondoune.com o llamar al 302 2287890 para consultar el estado. El asesor asignado también se comunicará contigo durante el proceso.' },
+    a:'Una vez radiques tu solicitud en este portal, recibirás un <strong>número de radicado</strong>. Con ese número puedes comunicarte al correo fondoune@fondoune.com o llamar al 300 3528156 para consultar el estado. El asesor asignado también se comunicará contigo durante el proceso.' },
   { cat:'proceso', ico:'⚙️', q:'¿Qué pasa si me faltan documentos al momento de radicar?',
     a:'Puedes radicar la solicitud con los documentos que tengas disponibles. El sistema generará la lista de chequeo completa y el asesor te indicará cuáles documentos hacen falta. Sin embargo, <strong>el proceso no avanza hasta tener el expediente completo</strong>.' },
   { cat:'proceso', ico:'⚙️', q:'¿Puedo modificar mi solicitud después de enviarla?',
@@ -1329,7 +1328,7 @@ var FAQ_DATA = [
     a:'No siempre es obligatorio, pero puede ser requerido si: <ul><li>Tu capacidad de pago individual no es suficiente</li><li>Llevas menos de 1 año como asociado del fondo</li><li>El comité de crédito así lo determine según el estudio</li></ul>El codeudor debe ser también asociado del fondo o cumplir los requisitos establecidos.' }
 ];
 
-var _faqCatActiva = 'todas';
+var _faqCatActiva = 'documentos';
 
 function toggleFAQ() {
   var panel = document.getElementById('faqPanel');
@@ -1342,7 +1341,7 @@ function toggleFAQ() {
     overlay.classList.add('show');
     fab.classList.add('clicked');
     setTimeout(function(){ fab.classList.remove('clicked'); }, 500);
-    renderFAQ(FAQ_DATA);
+    renderFAQ(FAQ_DATA.filter(function(f){ return f.cat === 'documentos'; }));
     setTimeout(function(){ document.getElementById('faqSearch').focus(); }, 400);
   }
 }
