@@ -39,6 +39,32 @@ window._fbIniciado = false;
     }
   } catch(e) { console.warn('Firebase error:', e.message); }
 })();
+
+/* ═══════════════════════════════════════════════════
+   SAFARI iOS FIX — Viewport Height
+   ═══════════════════════════════════════════════════
+   Safari iOS calcula 100vh incorrectamente incluyendo
+   las barras de navegación. Este fix asegura que el
+   viewport height sea correcto en todos los casos.
+   ══════════════════════════════════════════════════ */
+(function safariIOSViewportFix() {
+  function setVH() {
+    var vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', vh + 'px');
+  }
+  
+  // Ejecutar al cargar
+  setVH();
+  
+  // Ejecutar al cambiar tamaño o rotación
+  window.addEventListener('resize', setVH);
+  window.addEventListener('orientationchange', function() {
+    // Delay para esperar a que iOS actualice el viewport
+    setTimeout(setVH, 100);
+  });
+  
+  console.log('✅ Safari iOS viewport fix activado');
+})();
 </script>
 <style>
 :root {
@@ -90,16 +116,47 @@ window._fbIniciado = false;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth; -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent;}
-body{font-family:'Inter',sans-serif;background:#120804;color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+html{
+  scroll-behavior:smooth; 
+  -webkit-text-size-adjust:100%; 
+  -webkit-tap-highlight-color:transparent;
+  height: 100%;
+  height: -webkit-fill-available;
+}
+body{
+  font-family:'Inter',sans-serif;
+  background:#120804;
+  color:var(--text);
+  min-height:100vh;
+  min-height:-webkit-fill-available;
+  display:flex;
+  flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+  -webkit-overflow-scrolling:touch;
+  overflow-x:hidden;
+  position:relative;
+}
 
 /* ══ FONDO MESH OSCURO ANIMADO ══ */
 body::before {
-  content:''; position:fixed; inset:0; z-index:-3; pointer-events:none;
+  content:''; 
+  position:fixed; 
+  inset:0; 
+  z-index:-3; 
+  pointer-events:none;
   background: radial-gradient(ellipse 120% 100% at 50% 0%, #1E0A04 0%, #120804 45%, #0A0502 100%);
+  /* Safari iOS fix */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 body::after {
-  content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
+  content:''; 
+  position:fixed; 
+  inset:0; 
+  z-index:-2; 
+  pointer-events:none;
   background:
     radial-gradient(ellipse 70% 55% at 5% 8%,   rgba(232,81,26,0.28) 0%, transparent 52%),
     radial-gradient(ellipse 55% 50% at 95% 5%,  rgba(168,51,8,0.18)  0%, transparent 50%),
@@ -108,6 +165,11 @@ body::after {
     radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,120,60,0.06) 0%, transparent 60%);
   animation: empMeshFloat 20s ease-in-out infinite alternate;
   will-change: transform;
+  /* Safari iOS fix */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 @keyframes empMeshFloat {
   0%   { transform:translate(0,0) scale(1); }
@@ -221,7 +283,18 @@ body::after {
 .sf-text{font-size:10.5px;color:rgba(255,255,255,.3);text-align:center;line-height:1.5;}
 
 /* ══ CONTENT ══ */
-.content{flex:1;overflow-y:auto;padding:28px 28px 60px;min-width:0;background:var(--bg);}
+.content{
+  flex:1;
+  overflow-y:auto;
+  padding:28px 28px 60px;
+  min-width:0;
+  background:var(--bg);
+  /* Safari iOS fixes */
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+}
 /* Ocultar botón hamburguesa en desktop — se muestra solo en el media query móvil */
 .mobile-menu-btn{display:none;}
 
@@ -258,6 +331,11 @@ body::after {
   padding:18px;position:relative;overflow:hidden;
   transition:box-shadow .25s, transform .2s;
   box-shadow:var(--lg-shadow);
+  /* Safari iOS fixes */
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 .kpi:hover{box-shadow:0 12px 40px rgba(45,26,14,0.14);transform:translateY(-2px);}
 .kpi-accent{position:absolute;top:0;left:0;width:100%;height:3px;}
@@ -277,6 +355,11 @@ body::after {
   border-radius:var(--lg-radius);
   overflow:hidden;
   box-shadow:var(--lg-shadow);
+  /* Safari iOS fixes */
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 .card-head{padding:14px 18px;border-bottom:1px solid rgba(240,216,204,0.5);display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .card-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:14px;color:var(--text);}
@@ -1180,6 +1263,141 @@ tbody tr:nth-child(n+6){ animation-delay: .18s; }
 .recover-sub { font-size:13px; color:rgba(255,255,255,.45); margin-bottom:24px; }
 .recover-back { background:none; border:1px solid rgba(255,255,255,.15); color:rgba(255,255,255,.6); font-size:12px; cursor:pointer; font-family:'Inter',sans-serif; padding:6px 14px; border-radius:7px; margin-bottom:20px; transition:all .15s; display:inline-flex; align-items:center; gap:6px; }
 .recover-back:hover { background:rgba(255,255,255,.07); color:#fff; }
+
+/* ═══════════════════════════════════════════════════════════════
+   SAFARI iOS COMPATIBILITY FIXES
+   ═══════════════════════════════════════════════════════════════
+   Correcciones específicas para Safari en iOS/iPadOS para prevenir:
+   - Pantalla negra en viewport
+   - Problemas con height: 100vh
+   - Glitches de renderizado
+   - Problemas con position: fixed
+   ══════════════════════════════════════════════════════════════ */
+
+/* Asegurar que todos los elementos con position fixed se rendericen correctamente */
+.topbar,
+.sidebar,
+.ios-tab-bar,
+.toast,
+.modal-overlay,
+.login-overlay {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Prevenir problemas de scroll en Safari iOS */
+.modal,
+.content,
+.sidebar {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Asegurar que los overlays se vean correctamente */
+.modal-overlay,
+.login-overlay,
+#sidebarOverlay {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+/* Fix para inputs en iOS (prevenir zoom automático) */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+/* Asegurar que los botones sean táctiles en iOS */
+button,
+.btn,
+.nav-item,
+.act-btn,
+.ios-tab-item {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Canvas del gráfico donut - fix de renderizado */
+canvas {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Fix específico para Safari iOS - asegurar fondo visible */
+@supports (-webkit-touch-callout: none) {
+  /* Estilos solo para Safari iOS */
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+  
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  .main-layout {
+    min-height: calc(100vh - 60px);
+    min-height: calc(var(--vh, 1vh) * 100 - 60px);
+  }
+  
+  .content {
+    padding-bottom: calc(80px + var(--safe-bottom));
+  }
+}
+
+/* Media query específico para dispositivos iOS */
+@media only screen 
+  and (device-width: 393px) 
+  and (device-height: 852px) 
+  and (-webkit-device-pixel-ratio: 3) {
+  /* iPhone 14 Pro, 15, 15 Pro */
+  .ios-tab-bar {
+    height: calc(66px + 34px); /* 34px es el safe-area-inset-bottom típico */
+  }
+}
+
+@media only screen 
+  and (device-width: 430px) 
+  and (device-height: 932px) 
+  and (-webkit-device-pixel-ratio: 3) {
+  /* iPhone 14 Pro Max, 15 Plus, 15 Pro Max */
+  .ios-tab-bar {
+    height: calc(66px + 34px);
+  }
+}
+
+/* Prevenir problemas de renderizado en orientación landscape */
+@media (orientation: landscape) and (max-height: 500px) {
+  .content {
+    padding-top: 16px;
+    padding-bottom: calc(68px + var(--safe-bottom));
+  }
+}
+
+/* Debug helper - descomentar si necesitas verificar que los fixes se aplicaron */
+/* 
+@supports (-webkit-touch-callout: none) {
+  body::after {
+    content: '✓ iOS Safari Fixes Active';
+    position: fixed;
+    top: calc(60px + var(--safe-top));
+    right: 10px;
+    background: rgba(76, 175, 80, 0.9);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    z-index: 9999;
+    pointer-events: none;
+  }
+}
+*/
+
+/* ═══ FIN SAFARI iOS FIXES ═══ */
+
 </style>
 </head>
 <body>
