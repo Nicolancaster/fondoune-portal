@@ -531,6 +531,128 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 .emp-link { display: flex; align-items: center; gap: 10px; background: var(--fu-dark); color: rgba(255,255,255,.7); font-size: 12px; padding: 10px 20px; border-radius: 10px; text-decoration: none; transition: all .2s; margin-top: 20px; justify-content: center; }
 .emp-link:hover { background: var(--fu-blue); color: #fff; }
 
+/* ═══════════════════════════════════════════════════
+   SECCIÓN: DATOS DEL ASOCIADO
+   ═══════════════════════════════════════════════════ */
+.asoc-section {
+  margin-top: 28px;
+  border-radius: var(--lg-radius);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.75);
+  box-shadow: 0 4px 24px rgba(45,26,14,.08);
+}
+.asoc-head {
+  background: linear-gradient(135deg, #1A3A5C 0%, #1E4976 50%, #1A6CA8 100%);
+  padding: 18px 24px;
+  display: flex; align-items: center; gap: 14px;
+  position: relative; overflow: hidden;
+}
+.asoc-head::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 140px; height: 140px;
+  background: radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.asoc-head-ico {
+  width: 42px; height: 42px;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; flex-shrink: 0;
+}
+.asoc-head-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15.5px; color: #fff; line-height: 1.2; }
+.asoc-head-sub { font-size: 11.5px; color: rgba(255,255,255,.48); margin-top: 3px; font-weight: 300; }
+.asoc-badge {
+  margin-left: auto;
+  background: rgba(212,136,30,.18); border: 1px solid rgba(212,136,30,.35);
+  color: var(--fu-gold); font-family: 'Outfit', sans-serif;
+  font-size: 10.5px; font-weight: 700; padding: 4px 12px;
+  border-radius: 20px; letter-spacing: .4px; white-space: nowrap; flex-shrink: 0;
+}
+.asoc-toggle-btn {
+  width: 100%; background: rgba(255,255,255,0.92);
+  border: none; border-top: 1px solid rgba(26,60,92,.1);
+  padding: 12px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; font-family: 'Outfit', sans-serif;
+  font-size: 12.5px; font-weight: 600; color: #1A3A5C;
+  transition: background .2s;
+}
+.asoc-toggle-btn:hover { background: rgba(232,242,251,0.95); }
+.asoc-toggle-ico {
+  width: 22px; height: 22px; background: #E8F2FB; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .3s cubic-bezier(.22,1,.36,1);
+}
+.asoc-toggle-ico svg { width: 10px; height: 10px; color: #1A3A5C; }
+.asoc-section.open .asoc-toggle-ico { transform: rotate(180deg); }
+.asoc-body {
+  height: 0; overflow: hidden;
+  background: rgba(255,255,255,0.88);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  transition: height .42s cubic-bezier(.22,1,.36,1);
+}
+.asoc-body-inner { padding: 22px 24px 4px; }
+.asoc-sep {
+  font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 700;
+  letter-spacing: 1.8px; text-transform: uppercase; color: #1A3A5C;
+  margin: 20px 0 14px; padding-bottom: 8px;
+  border-bottom: 2px solid rgba(26,60,92,.12);
+  display: flex; align-items: center; gap: 8px;
+}
+.asoc-sep:first-child { margin-top: 0; }
+.asoc-sep::before { content:''; display:inline-block; width:3px; height:13px; background:#1A6CA8; border-radius:2px; }
+.asoc-body select {
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231A3A5C' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px !important;
+}
+.asoc-body input:focus, .asoc-body select:focus {
+  border-color: #1A6CA8 !important;
+  box-shadow: 0 0 0 3px rgba(26,108,168,.13) !important;
+}
+.asoc-req-note { font-size: 11px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+.asoc-req-note span { color: var(--fu-gold); font-weight: 700; }
+.asoc-foot {
+  padding: 16px 24px 20px; display: flex; gap: 10px; align-items: center;
+  border-top: 1px solid rgba(26,60,92,.08); background: rgba(248,252,255,0.9);
+}
+.asoc-btn-save {
+  flex: 1; background: linear-gradient(135deg, #1A3A5C, #1A6CA8);
+  color: #fff; border: none; border-radius: 11px; height: 46px;
+  font-family: 'Outfit', sans-serif; font-size: 13.5px; font-weight: 700;
+  cursor: pointer; letter-spacing: .2px;
+  transition: opacity .2s, transform .15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 16px rgba(26,60,92,.28);
+}
+.asoc-btn-save:hover { opacity:.92; transform:translateY(-1px); }
+.asoc-btn-save:active { transform:translateY(0); }
+.asoc-btn-clr {
+  background: rgba(26,60,92,.07); color: #1A3A5C;
+  border: 1.5px solid rgba(26,60,92,.15); border-radius: 11px;
+  height: 46px; padding: 0 20px; font-family: 'Outfit', sans-serif;
+  font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .2s;
+}
+.asoc-btn-clr:hover { background: rgba(26,60,92,.12); }
+.asoc-saved-bar {
+  margin: 0 24px 14px; padding: 10px 14px;
+  background: rgba(178,230,206,.3); border: 1px solid #b2e6ce;
+  border-radius: 9px; font-size: 12px; color: #1a6642;
+  font-weight: 600; display: none; align-items: center; gap: 8px;
+}
+.asoc-saved-bar.show { display: flex; }
+@media (max-width: 480px) {
+  .asoc-head { padding: 14px 16px; }
+  .asoc-body-inner { padding: 14px 14px 4px; }
+  .asoc-foot { flex-direction: column; }
+  .asoc-btn-save, .asoc-btn-clr { width: 100%; }
+  .asoc-badge { display: none; }
+}
+
 .pqrs-section {
   margin-top: 28px;
   background: rgba(255,255,255,0.84);
@@ -1209,6 +1331,297 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
     🔐 Acceso Portal Empleados FondoUne →
   </a>
 
+  <!-- ══ SECCIÓN: DATOS DEL ASOCIADO ══ -->
+  <div class="asoc-section" id="asocSection">
+
+    <!-- Header -->
+    <div class="asoc-head">
+      <div class="asoc-head-ico">👤</div>
+      <div>
+        <div class="asoc-head-title">Datos del Asociado</div>
+        <div class="asoc-head-sub">Información personal y laboral del asociado</div>
+      </div>
+      <div class="asoc-badge">🔒 Datos seguros</div>
+    </div>
+
+    <!-- Toggle -->
+    <button class="asoc-toggle-btn" onclick="ASOC.toggle()" id="asocToggleBtn">
+      <span id="asocToggleTxt">Completar o actualizar mis datos personales</span>
+      <span class="asoc-toggle-ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </span>
+    </button>
+
+    <!-- Cuerpo colapsable -->
+    <div class="asoc-body" id="asocBody">
+      <div class="asoc-body-inner">
+        <p class="asoc-req-note">Los campos marcados con <span>*</span> son obligatorios para radicar la solicitud de crédito.</p>
+
+        <!-- ── 1. IDENTIFICACIÓN ── -->
+        <div class="asoc-sep">Identificación</div>
+        <div class="fg fg3">
+          <div class="fld">
+            <label>Tipo de Identificación <span class="req">*</span></label>
+            <select id="asocTipoId">
+              <option value="">Seleccionar…</option>
+              <option value="CC">Cédula de Ciudadanía</option>
+              <option value="CE">Cédula de Extranjería</option>
+              <option value="PA">Pasaporte</option>
+              <option value="NIT">NIT</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Número de Identificación <span class="req">*</span></label>
+            <input id="asocCedula" placeholder="Ej: 1.234.567.890" autocomplete="off">
+          </div>
+          <div class="fld">
+            <label>Relación con FondoUne <span class="req">*</span></label>
+            <select id="asocRelacion">
+              <option value="Asociado">Asociado</option>
+              <option value="Beneficiario">Beneficiario</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ── 2. NOMBRE COMPLETO ── -->
+        <div class="asoc-sep">Nombre Completo</div>
+        <div class="fg fg2">
+          <div class="fld">
+            <label>Primer Apellido <span class="req">*</span></label>
+            <input id="asocApe1" placeholder="Primer apellido">
+          </div>
+          <div class="fld">
+            <label>Segundo Apellido</label>
+            <input id="asocApe2" placeholder="Segundo apellido">
+          </div>
+          <div class="fld">
+            <label>Primer Nombre <span class="req">*</span></label>
+            <input id="asocNom1" placeholder="Primer nombre">
+          </div>
+          <div class="fld">
+            <label>Segundo Nombre</label>
+            <input id="asocNom2" placeholder="Segundo nombre">
+          </div>
+        </div>
+
+        <!-- ── 3. DATOS DE NACIMIENTO Y DOCUMENTO ── -->
+        <div class="asoc-sep">Nacimiento y Documento</div>
+        <div class="fg fg3">
+          <div class="fld">
+            <label>Fecha de Nacimiento <span class="req">*</span></label>
+            <input type="date" id="asocFechaNac">
+          </div>
+          <div class="fld">
+            <label>Lugar de Expedición del Doc.</label>
+            <input id="asocLugarExp" placeholder="Ej: Medellín, Antioquia">
+          </div>
+          <div class="fld">
+            <label>Fecha de Expedición del Doc.</label>
+            <input type="date" id="asocFechaExp">
+          </div>
+          <div class="fld">
+            <label>Sexo <span class="req">*</span></label>
+            <select id="asocSexo">
+              <option value="">Seleccionar…</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Estado Civil <span class="req">*</span></label>
+            <select id="asocEstadoCivil">
+              <option value="">Seleccionar…</option>
+              <option value="S">Soltero(a)</option>
+              <option value="C">Casado(a)</option>
+              <option value="U">Unión Libre</option>
+              <option value="D">Divorciado(a)</option>
+              <option value="V">Viudo(a)</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Estudios</label>
+            <select id="asocEstudios">
+              <option value="">Seleccionar…</option>
+              <option value="P">Primaria</option>
+              <option value="S">Secundaria</option>
+              <option value="T">Técnico</option>
+              <option value="U">Universitario</option>
+              <option value="E">Especialización</option>
+              <option value="M">Maestría / Doctorado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ── 4. CONTACTO Y DOMICILIO ── -->
+        <div class="asoc-sep">Contacto y Domicilio</div>
+        <div class="fg fg2">
+          <div class="fld">
+            <label>Teléfono 1 <span class="req">*</span></label>
+            <input id="asocTel1" placeholder="Ej: 604 123 4567" maxlength="20">
+          </div>
+          <div class="fld">
+            <label>Celular <span class="req">*</span></label>
+            <input id="asocCelular" placeholder="Ej: 310 000 0000" maxlength="15">
+          </div>
+          <div class="fld">
+            <label>Teléfono 2</label>
+            <input id="asocTel2" placeholder="Opcional" maxlength="20">
+          </div>
+          <div class="fld">
+            <label>Correo Electrónico <span class="req">*</span></label>
+            <input type="email" id="asocEmail" placeholder="correo@ejemplo.com">
+          </div>
+          <div class="fld s2">
+            <label>Dirección de Domicilio <span class="req">*</span></label>
+            <input id="asocDireccion" placeholder="Ej: Calle 50 # 30-40, Barrio El Poblado">
+          </div>
+          <div class="fld">
+            <label>Ciudad / Municipio <span class="req">*</span></label>
+            <input id="asocCiudad" placeholder="Ej: Medellín">
+          </div>
+          <div class="fld">
+            <label>Departamento</label>
+            <input id="asocDepto" placeholder="Ej: Antioquia" value="Antioquia">
+          </div>
+          <div class="fld">
+            <label>Barrio</label>
+            <input id="asocBarrio" placeholder="Barrio o sector">
+          </div>
+          <div class="fld">
+            <label>Estrato Socioeconómico</label>
+            <select id="asocEstrato">
+              <option value="">–</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ── 5. INFORMACIÓN LABORAL ── -->
+        <div class="asoc-sep">Información Laboral</div>
+        <div class="fg fg2">
+          <div class="fld">
+            <label>Empresa / Entidad <span class="req">*</span></label>
+            <input id="asocEmpresa" placeholder="Nombre de la empresa donde trabaja">
+          </div>
+          <div class="fld">
+            <label>Período de Deducción</label>
+            <select id="asocPeriodo">
+              <option value="Quincenal">Quincenal</option>
+              <option value="Mensual">Mensual</option>
+              <option value="Semanal">Semanal</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Dependencia / Área</label>
+            <input id="asocDependencia" placeholder="Ej: Recursos Humanos">
+          </div>
+          <div class="fld">
+            <label>Tipo de Contrato</label>
+            <select id="asocTipoContrato">
+              <option value="">Seleccionar…</option>
+              <option value="E">Empleado Oficial</option>
+              <option value="T">Término Fijo</option>
+              <option value="I">Indefinido</option>
+              <option value="P">Prestación de Servicios</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Cargo / Profesión</label>
+            <input id="asocCargo" placeholder="Cargo actual">
+          </div>
+          <div class="fld">
+            <label>Fecha de Ingreso a la Empresa</label>
+            <input type="date" id="asocFechaIngreso">
+          </div>
+          <div class="fld">
+            <label>Salario Mensual <span class="req">*</span></label>
+            <div class="campo-peso">
+              <div class="peso-box">
+                <span class="peso-pfx">$</span>
+                <input class="peso-input" id="asocSalario" placeholder="0" inputmode="numeric" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="fld">
+            <label>Deducción Ocasional</label>
+            <select id="asocDeduccion">
+              <option value="No">No</option>
+              <option value="Si">Sí</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ── 6. INFORMACIÓN BANCARIA ── -->
+        <div class="asoc-sep">Información Bancaria</div>
+        <div class="fg fg3">
+          <div class="fld">
+            <label>Banco</label>
+            <select id="asocBanco">
+              <option value="">Seleccionar…</option>
+              <option>Bancolombia</option>
+              <option>Banco de Bogotá</option>
+              <option>Davivienda</option>
+              <option>BBVA</option>
+              <option>Banco Popular</option>
+              <option>Banco Agrario</option>
+              <option>Nequi</option>
+              <option>Daviplata</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Número de Cuenta</label>
+            <input id="asocNroCuenta" placeholder="Número de cuenta bancaria">
+          </div>
+          <div class="fld">
+            <label>Tipo de Cuenta</label>
+            <select id="asocTipoCuenta">
+              <option value="">Seleccionar…</option>
+              <option value="AH">Ahorros</option>
+              <option value="CC">Corriente</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ── 7. RUT ── -->
+        <div class="asoc-sep">RUT</div>
+        <div class="fg fg2">
+          <div class="fld s2">
+            <label>Número de NIT / RUT</label>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input id="asocRut" placeholder="Ej: 900.123.456-7" style="flex:1">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;color:var(--muted);cursor:pointer;white-space:nowrap;">
+                <input type="checkbox" id="asocRutNA" onchange="ASOC.toggleRut(this)"> No tengo / No aplica
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /asoc-body-inner -->
+
+      <!-- Barra de confirmación guardado -->
+      <div class="asoc-saved-bar" id="asocSavedBar">
+        ✅ Datos guardados correctamente. Se pre-llenarán en tu próxima solicitud.
+      </div>
+
+      <!-- Footer botones -->
+      <div class="asoc-foot">
+        <button class="asoc-btn-save" onclick="ASOC.guardar()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Guardar mis datos
+        </button>
+        <button class="asoc-btn-clr" onclick="ASOC.limpiar()">↺ Limpiar</button>
+      </div>
+    </div><!-- /asoc-body -->
+
+  </div><!-- /asoc-section -->
+
+
   <!-- ══ SECCIÓN PQRS / OTRAS SOLICITUDES ══ -->
   <div class="pqrs-section" id="pqrsSection">
     <div class="pqrs-header">
@@ -1634,6 +2047,193 @@ function toggleRut(checkbox, inputId) {
   inp.style.opacity = checkbox.checked ? '.4' : '1';
   inp.style.background = checkbox.checked ? '#f0f0f0' : '';
 }
+
+/* ════════════════════════════════════════════════
+   MÓDULO ASOC — Datos del Asociado
+   Gestiona el formulario colapsable de datos
+   personales y laborales del asociado.
+   Persiste en localStorage con clave 'fondoune_asoc'.
+   ════════════════════════════════════════════════ */
+var ASOC = (function () {
+  var STORAGE_KEY = 'fondoune_asoc_v1';
+
+  /* Campos del formulario (id → clave de storage) */
+  var CAMPOS = [
+    'asocTipoId','asocCedula','asocRelacion',
+    'asocApe1','asocApe2','asocNom1','asocNom2',
+    'asocFechaNac','asocLugarExp','asocFechaExp','asocSexo','asocEstadoCivil','asocEstudios',
+    'asocTel1','asocCelular','asocTel2','asocEmail','asocDireccion',
+    'asocCiudad','asocDepto','asocBarrio','asocEstrato',
+    'asocEmpresa','asocPeriodo','asocDependencia','asocTipoContrato',
+    'asocCargo','asocFechaIngreso','asocSalario','asocDeduccion',
+    'asocBanco','asocNroCuenta','asocTipoCuenta',
+    'asocRut'
+  ];
+
+  /* ── Toggle del panel colapsable ── */
+  function toggle() {
+    var sec = document.getElementById('asocSection');
+    var body = document.getElementById('asocBody');
+    var txt = document.getElementById('asocToggleTxt');
+    var isOpen = sec.classList.contains('open');
+
+    if (isOpen) {
+      /* Cerrar: fijar height antes de animar a 0 */
+      body.style.height = body.scrollHeight + 'px';
+      body.offsetHeight; // reflow
+      body.style.height = '0';
+      sec.classList.remove('open');
+      txt.textContent = 'Completar o actualizar mis datos personales';
+    } else {
+      /* Abrir */
+      sec.classList.add('open');
+      txt.textContent = 'Ocultar formulario';
+      body.style.height = body.scrollHeight + 'px';
+      var onEnd = function() {
+        body.removeEventListener('transitionend', onEnd);
+        if (sec.classList.contains('open')) body.style.height = 'auto';
+      };
+      body.addEventListener('transitionend', onEnd);
+    }
+  }
+
+  /* ── Cargar datos guardados desde localStorage ── */
+  function cargar() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      CAMPOS.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el || data[id] === undefined) return;
+        el.value = data[id];
+        /* Si era salario, aplicar formato visual */
+        if (id === 'asocSalario') formatSalario(el);
+      });
+      /* Sincronizar los campos del formulario principal con la cédula guardada */
+      sincronizarPrincipal();
+    } catch(e) { /* ignorar errores de storage */ }
+  }
+
+  /* ── Guardar en localStorage ── */
+  function guardar() {
+    var data = {};
+    CAMPOS.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) data[id] = el.value;
+    });
+    /* Salario: guardar el número limpio */
+    var salEl = document.getElementById('asocSalario');
+    if (salEl) data['asocSalario'] = salEl.value.replace(/\./g,'');
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch(e) { /* storage lleno o en modo privado */ }
+
+    /* Sincronizar los campos del formulario principal */
+    sincronizarPrincipal();
+
+    /* Mostrar confirmación */
+    var bar = document.getElementById('asocSavedBar');
+    if (bar) {
+      bar.classList.add('show');
+      setTimeout(function() { bar.classList.remove('show'); }, 3500);
+    }
+
+    /* Actualizar el toggle txt para indicar que hay datos */
+    var txt = document.getElementById('asocToggleTxt');
+    if (txt) txt.textContent = 'Ocultar formulario';
+  }
+
+  /* ── Sincronizar nombre y cédula al formulario principal ── */
+  function sincronizarPrincipal() {
+    var nom1 = v('asocNom1'), nom2 = v('asocNom2');
+    var ape1 = v('asocApe1'), ape2 = v('asocApe2');
+    var nombreCompleto = [nom1, nom2, ape1, ape2].filter(Boolean).join(' ');
+
+    var elNombre = document.getElementById('nombreTitular');
+    var elCedula = document.getElementById('cedula');
+    var elTel    = document.getElementById('telefono');
+    var elCorreo = document.getElementById('correo');
+
+    if (elNombre && !elNombre.value && nombreCompleto) elNombre.value = nombreCompleto;
+    if (elCedula && !elCedula.value && v('asocCedula'))  elCedula.value = v('asocCedula');
+    if (elTel    && !elTel.value    && v('asocCelular')) elTel.value    = v('asocCelular');
+    if (elCorreo && !elCorreo.value && v('asocEmail'))   elCorreo.value = v('asocEmail');
+  }
+
+  function v(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+
+  /* ── Limpiar todos los campos ── */
+  function limpiar() {
+    CAMPOS.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+      el.disabled = false;
+      el.style.opacity = '';
+      el.style.background = '';
+    });
+    var cb = document.getElementById('asocRutNA');
+    if (cb) cb.checked = false;
+    var bar = document.getElementById('asocSavedBar');
+    if (bar) bar.classList.remove('show');
+  }
+
+  /* ── Toggle del RUT ── */
+  function toggleRut(cb) {
+    var inp = document.getElementById('asocRut');
+    if (!inp) return;
+    inp.disabled = cb.checked;
+    inp.value = cb.checked ? 'No aplica' : '';
+    inp.style.opacity = cb.checked ? '.4' : '1';
+    inp.style.background = cb.checked ? '#f0f0f0' : '';
+  }
+
+  /* ── Formato de salario con puntos de miles ── */
+  function formatSalario(inp) {
+    var raw = inp.value.replace(/\D/g,'');
+    if (!raw) return;
+    inp.value = parseInt(raw, 10).toLocaleString('es-CO');
+  }
+
+  /* ── Init: cargar al iniciar, conectar formato salario ── */
+  function init() {
+    cargar();
+    var salEl = document.getElementById('asocSalario');
+    if (salEl) {
+      salEl.addEventListener('input', function() {
+        var pos = salEl.selectionStart;
+        var raw = salEl.value.replace(/\D/g,'');
+        if (raw) {
+          salEl.value = parseInt(raw, 10).toLocaleString('es-CO');
+        }
+      });
+    }
+
+    /* Si ya hay datos guardados, mostrar indicador en el toggle */
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var data = JSON.parse(raw);
+        var tiene = CAMPOS.some(function(id) { return !!data[id]; });
+        if (tiene) {
+          var txt = document.getElementById('asocToggleTxt');
+          if (txt) txt.textContent = 'Ver / actualizar mis datos personales ✓';
+        }
+      }
+    } catch(e) {}
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+
+  return { toggle:toggle, guardar:guardar, limpiar:limpiar, toggleRut:toggleRut };
+}());
+
 
 /* ── toggleOtroBanco — muestra/oculta campo cuando selecciona "Otro" ── */
 function toggleOtroBanco(select) {
