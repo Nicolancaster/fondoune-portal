@@ -2742,9 +2742,10 @@ function recargar(){
    GESTIÓN DE USUARIOS — Sistema completo
    ═══════════════════════════════════════════════════════ */
 
-var USR_KEY = 'fu_usuarios'; // localStorage key para usuarios custom
+var USR_KEY     = 'fu_usuarios';           // localStorage key para usuarios custom
+var USR_DEL_KEY = 'fu_usuarios_eliminados'; // localStorage key para IDs eliminados
 
-/* Cargar usuarios (combina base + guardados en localStorage) */
+/* Cargar usuarios (combina base + guardados en localStorage, respetando eliminaciones) */
 function cargarUsuarios() {
   var base = {
     'admin':   { hash: 'e5dc2f73f21351f6eea4d250725e701fd5ba6f9442f964f3eb6f7db510186d0c', nombre: 'Administrador', rol: 'Administrador' },
@@ -2752,9 +2753,12 @@ function cargarUsuarios() {
     'asesor2': { hash: '52fb1bd7895fe2b4e69b2f93b28c9f77122d6c8c5ad1da6ce88bd4fec08910f2', nombre: 'Asesor Créditos 2', rol: 'Asesor' }
   };
   try {
-    var custom = JSON.parse(localStorage.getItem(USR_KEY) || '{}');
-    // Merge: localStorage sobreescribe base (permite editar/eliminar)
-    return Object.assign({}, base, custom);
+    var custom     = JSON.parse(localStorage.getItem(USR_KEY)     || '{}');
+    var eliminados = JSON.parse(localStorage.getItem(USR_DEL_KEY) || '[]');
+    // Merge: custom sobreescribe base; luego se excluyen los marcados como eliminados
+    var resultado = Object.assign({}, base, custom);
+    eliminados.forEach(function(login) { delete resultado[login]; });
+    return resultado;
   } catch(e) { return base; }
 }
 
@@ -2764,6 +2768,10 @@ function persistirUsuario(login, datos) {
     var custom = JSON.parse(localStorage.getItem(USR_KEY) || '{}');
     custom[login] = datos;
     localStorage.setItem(USR_KEY, JSON.stringify(custom));
+    // Si este login estaba marcado como eliminado, quitarlo de esa lista
+    var eliminados = JSON.parse(localStorage.getItem(USR_DEL_KEY) || '[]');
+    var idx = eliminados.indexOf(login);
+    if (idx > -1) { eliminados.splice(idx, 1); localStorage.setItem(USR_DEL_KEY, JSON.stringify(eliminados)); }
     // También actualizar USUARIOS en memoria
     USUARIOS[login] = datos;
   } catch(e) {}
@@ -2772,9 +2780,17 @@ function persistirUsuario(login, datos) {
 /* Eliminar usuario de localStorage */
 function eliminarUsuarioPersistido(login) {
   try {
+    // 1. Borrar del objeto de usuarios custom (si fue creado/editado)
     var custom = JSON.parse(localStorage.getItem(USR_KEY) || '{}');
     delete custom[login];
     localStorage.setItem(USR_KEY, JSON.stringify(custom));
+
+    // 2. Registrar en lista de eliminados para excluirlo del merge con base
+    var eliminados = JSON.parse(localStorage.getItem(USR_DEL_KEY) || '[]');
+    if (eliminados.indexOf(login) === -1) eliminados.push(login);
+    localStorage.setItem(USR_DEL_KEY, JSON.stringify(eliminados));
+
+    // 3. Eliminar de memoria
     delete USUARIOS[login];
   } catch(e) {}
 }
