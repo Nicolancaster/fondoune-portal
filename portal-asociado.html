@@ -778,7 +778,7 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 .fab-felix-wrap {
   position: fixed;
   bottom: 14px; right: 16px;
-  z-index: 599;
+  z-index: 602;
   display: flex; flex-direction: column; align-items: flex-end;
   pointer-events: none;
 }
@@ -1242,6 +1242,36 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
   .tc { min-width: unset; }
   .hdr .logo-tagline { display: none; }
 }
+
+
+/* Félix anclado en esquina inferior derecha del panel cuando está abierto */
+.fab-felix-wrap.fab-docked {
+  bottom: 82px;
+  right: 20px;
+  z-index: 602;
+  transition: bottom 0.4s cubic-bezier(0.34,1.48,0.64,1), right 0.4s cubic-bezier(0.34,1.48,0.64,1);
+}
+.fab-felix-wrap.fab-docked .fab-help {
+  width: 72px;
+  height: 120px;
+  transition: width 0.4s cubic-bezier(0.34,1.48,0.64,1), height 0.4s cubic-bezier(0.34,1.48,0.64,1);
+}
+.fab-felix-wrap.fab-docked .fab-felix-video {
+  width: 72px;
+  height: 120px;
+}
+.fab-felix-wrap.fab-docked .fab-bubble {
+  display: none;
+}
+/* En móvil, Felix docked queda en esquina inferior derecha también */
+@media (max-width: 480px) {
+  .fab-felix-wrap.fab-docked {
+    bottom: 72px;
+    right: 12px;
+  }
+}
+
+
 </style>
 </head>
 <body>
@@ -2670,6 +2700,7 @@ function toggleFAQ() {
       });
     });
     fab.classList.add('clicked');
+    document.getElementById('fabWrap').classList.add('fab-docked');
     setTimeout(function(){ fab.classList.remove('clicked'); }, 400);
     setTimeout(function(){
       var s = document.getElementById('faqSearch');
@@ -2683,6 +2714,7 @@ function cerrarFAQ() {
   panel.classList.remove('show');
   panel.classList.add('closing');
   document.getElementById('faqOverlay').classList.remove('show');
+  document.getElementById('fabWrap').classList.remove('fab-docked');
   /* Limpiar closing exactamente cuando termina la transición (220ms) */
   setTimeout(function() { panel.classList.remove('closing'); }, 240);
 }
