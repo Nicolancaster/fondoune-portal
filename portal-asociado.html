@@ -728,6 +728,22 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
   .asoc-foot { flex-direction: column; }
   .asoc-btn-save, .asoc-btn-clr { width: 100%; }
   .asoc-badge { display: none; }
+
+  /* En móvil el panel ocupa todo el ancho desde abajo */
+  .faq-panel {
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 22px 22px 0 0;
+    transform-origin: center bottom;
+    transform: translateY(100%) scale(0.96);
+  }
+  .faq-panel.show {
+    transform: translateY(0) scale(1);
+  }
 }
 
 .pqrs-section {
@@ -976,11 +992,11 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 /* ═══ FLOATING PANEL — spring fluido ═══ */
 .faq-panel {
   position: fixed;
-  left: 24px;
-  bottom: 96px;
+  right: 168px;          /* 16px margen + 140px ancho Félix + 12px gap */
+  bottom: 14px;          /* alineado con la base de Félix */
   z-index: 601;
-  width: 400px; max-width: calc(100vw - 32px);
-  height: calc(100vh - 120px);
+  width: 400px; max-width: calc(100vw - 200px);
+  height: calc(100vh - 40px);
   max-height: 620px;
   min-height: 420px;
   background: #FDF6F3;
@@ -1358,19 +1374,14 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 @media (max-width: 400px) {
   .type-row { grid-template-columns: 1fr; }
   .tc { min-width: unset; }
-  .hdr .logo-tagline { display: none; }
-}
-
-
-/* Félix anclado en esquina inferior derecha del panel cuando está abierto */
-..fab-felix-wrap.fab-docked {
-  bottom: 24px;
-  left: 16px;
-  right: auto;
+  .hdr .logo-tagli.fab-felix-wrap.fab-docked {
+  /* Félix no se mueve — el panel aparece a su izquierda */
+  bottom: 14px;
+  right: 16px;
+  left: auto;
   z-index: 602;
-  align-items: flex-start;
-  transition: bottom 0.4s cubic-bezier(0.34,1.48,0.64,1),
-              left   0.4s cubic-bezier(0.34,1.48,0.64,1),
+  align-items: flex-end;
+}  left   0.4s cubic-bezier(0.34,1.48,0.64,1),
               right  0.4s cubic-bezier(0.34,1.48,0.64,1);
 }.fab-felix-wrap.fab-docked .fab-help {
   width: 96px;
