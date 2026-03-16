@@ -4411,7 +4411,7 @@ function filtrarCategoria(cat, el) {
   /* ── FUNCIÓN PRINCIPAL: ENVIAR MENSAJE A GEMINI ── */
   async function felixSendMessage(userText) {
     if (!userText.trim() || isLoading) return;
-    if (FELIX_CFG.API_KEY === 'AIzaSyCO--eZ7QAE6SMcab4yH4pErIu8fXK73kI') {
+    if (FELIX_CFG.API_KEY === 'REEMPLAZAR_CON_TU_API_KEY') {
       appendMessage('felix', '⚠️ Para activarme necesitas configurar la API Key de Gemini en el código. Consulta las instrucciones en el portal.');
       return;
     }
