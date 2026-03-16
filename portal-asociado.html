@@ -976,8 +976,8 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 /* ═══ FLOATING PANEL — spring fluido ═══ */
 .faq-panel {
   position: fixed;
-  right: 168px;
-  bottom: 14px;
+  right: 24px;
+  bottom: 96px;
   z-index: 601;
   width: 400px; max-width: calc(100vw - 32px);
   height: calc(100vh - 120px);
@@ -1364,8 +1364,10 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 
 /* Félix anclado en esquina inferior derecha del panel cuando está abierto */
 .fab-felix-wrap.fab-docked {
-  bottom: 14px; right: 16px; left: auto;
-  z-index: 602; align-items: flex-end;
+  bottom: 82px;
+  right: 20px;
+  z-index: 602;
+  transition: bottom 0.4s cubic-bezier(0.34,1.48,0.64,1), right 0.4s cubic-bezier(0.34,1.48,0.64,1);
 }
 .fab-felix-wrap.fab-docked .fab-help {
   width: 96px;
@@ -1382,9 +1384,9 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 /* En móvil, Felix docked queda en esquina inferior derecha también */
 @media (max-width: 480px) {
   .fab-felix-wrap.fab-docked {
-  bottom: 14px; right: 16px; left: auto;
-  z-index: 602; align-items: flex-end;
-}
+    bottom: 72px;
+    right: 12px;
+  }
 }
 
 
@@ -3696,7 +3698,7 @@ var PQRS = (function() {
             <div class="felix-chat-name">Félix · FondoUne IA</div>
             <div class="felix-chat-status">
               <span class="felix-status-dot"></span>
-              Asistente activo · Gemini 2.0 Flash
+              Asistente activo · Gemini 1.5 Flash
             </div>
           </div>
         </div>
@@ -3744,7 +3746,7 @@ var PQRS = (function() {
         </button>
       </div>
       <div class="felix-input-hint">
-        Powered by Gemini 2.0 Flash · <a href="mailto:creditosvivienda@fondoune.com">¿Necesitas más ayuda?</a>
+        Powered by Gemini 1.5 Flash · <a href="mailto:creditosvivienda@fondoune.com">¿Necesitas más ayuda?</a>
       </div>
     </div>
   </div>
@@ -4327,7 +4329,7 @@ function filtrarCategoria(cat, el) {
   <script>
 
 /* ═══════════════════════════════════════════════════════════════
-   FÉLIX IA — Integración Gemini 2.0 Flash
+   FÉLIX IA — Integración Gemini 1.5 Flash
    FondoUne Portal | v1.0 2026
    ⚠️  Reemplaza REEMPLAZAR_CON_TU_API_KEY con tu clave de
        Google AI Studio (aistudio.google.com)
@@ -4338,7 +4340,7 @@ function filtrarCategoria(cat, el) {
   /* ── CONFIGURACIÓN ── */
   var FELIX_CFG = {
     API_KEY:   'AIzaSyDi9RaIjm2wYwysmjKgqHOVYijkSy-byl0',
-    MODEL:     'gemini-2.0-flash',
+    MODEL:     'gemini-1.5-flash',
     ENDPOINT:  'https://generativelanguage.googleapis.com/v1beta/models/',
     MAX_TOKENS: 512,
     TEMP:       0.7,
@@ -4462,11 +4464,7 @@ function filtrarCategoria(cat, el) {
 
     } catch(err) {
       showTyping(false);
-      var errMsg = '😔 Error: ' + (err.message || err.toString()) + '. Escríbenos a creditosvivienda@fondoune.com'; else if (err.message && err.message.includes('quota')) {
-        errMsg += 'Se alcanzó el límite de consultas. Intenta en unos minutos.';
-      } else {
-        errMsg += 'Por favor escríbenos a creditosvivienda@fondoune.com';
-      }
+      var errMsg = '😔 Error: ' + (err.message || err.toString());
       appendMessage('felix', errMsg);
       if (window.FU_Audit) FU_Audit.log('FELIX_ERROR', err.message || 'Error desconocido');
     }

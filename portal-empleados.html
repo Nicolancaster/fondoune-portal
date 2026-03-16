@@ -3798,7 +3798,7 @@ window.addEventListener('resize', _debounce(function() {
             <div class="felix-chat-name">Félix · FondoUne IA</div>
             <div class="felix-chat-status">
               <span class="felix-status-dot"></span>
-              Asistente activo · Gemini 2.0 Flash
+              Asistente activo · Gemini 1.5 Flash
             </div>
           </div>
         </div>
@@ -3844,7 +3844,7 @@ window.addEventListener('resize', _debounce(function() {
         </button>
       </div>
       <div class="felix-input-hint">
-        Powered by Gemini 2.0 Flash · <a href="mailto:creditosvivienda@fondoune.com">¿Más ayuda?</a>
+        Powered by Gemini 1.5 Flash · <a href="mailto:creditosvivienda@fondoune.com">¿Más ayuda?</a>
       </div>
     </div>
   </div>
@@ -3855,7 +3855,7 @@ window.addEventListener('resize', _debounce(function() {
   <script>
 
 /* ═══════════════════════════════════════════════════════════════
-   FÉLIX IA — Integración Gemini 2.0 Flash
+   FÉLIX IA — Integración Gemini 1.5 Flash
    FondoUne Portal Empleados | v1.0 2026
    ⚠️  Reemplaza REEMPLAZAR_CON_TU_API_KEY con tu clave de
        Google AI Studio (aistudio.google.com)
@@ -3865,7 +3865,7 @@ window.addEventListener('resize', _debounce(function() {
 
   var FELIX_CFG = {
     API_KEY:   'AIzaSyDi9RaIjm2wYwysmjKgqHOVYijkSy-byl0',
-    MODEL:          'gemini-2.0-flash',
+    MODEL:          'gemini-1.5-flash',
     ENDPOINT:       'https://generativelanguage.googleapis.com/v1beta/models/',
     MAX_TOKENS:     600,
     TEMP:           0.65,
@@ -4005,7 +4005,10 @@ window.addEventListener('resize', _debounce(function() {
 
     } catch(err) {
       showTyping(false);
-      var msg = '😔 Error: ' + (err.message || err.toString()) + '. Escríbenos a creditosvivienda@fondoune.com';
+      var msg = '😔 Problema de conexión. ';
+      if (err.message && err.message.includes('API_KEY')) msg += 'Verifica la API Key.';
+      else if (err.message && err.message.includes('quota')) msg += 'Límite de consultas alcanzado. Intenta en unos minutos.';
+      else msg += 'Verifica tu conexión a internet.';
       appendMessage('felix', msg);
       if (window.FU_Audit) FU_Audit.log('FELIX_ERROR_EMP', err.message || 'Error');
     }
@@ -4100,6 +4103,8 @@ window.addEventListener('resize', _debounce(function() {
       var b = document.getElementById('felixBubble');
       if (b) { b.style.transition='opacity .4s'; b.style.opacity='0'; setTimeout(function(){ if(b)b.style.display='none'; }, 400); }
     }, 5000);
-  </script>
+  
+  window.showFelixWelcome = function() { if(typeof showWelcome==='function') showWelcome(); };
+</script>
 </body>
 </html>
