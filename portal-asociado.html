@@ -3855,41 +3855,40 @@ var _faqCatActiva = 'documentos';
 }());
 
 function toggleFAQ() {
-  var panel = document.getElementById('faqPanel');
+  var panel   = document.getElementById('faqPanel');
   var overlay = document.getElementById('faqOverlay');
-  var fab = document.getElementById('fabHelp');
+  var fab     = document.getElementById('fabHelp');
+  var wrap    = document.getElementById('fabWrap');
   if (panel.classList.contains('show')) {
     cerrarFAQ();
   } else {
-    /* Pre-render del contenido antes de que el panel sea visible */
-    renderFAQ(FAQ_DATA.filter(function(f){ return f.cat === 'documentos'; }));
-    /* Forzar un frame de layout antes de añadir .show — garantiza
-       que el navegador parte del estado inicial (scale 0.72) y no salta */
     panel.classList.remove('closing');
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
         panel.classList.add('show');
-        overlay.classList.add('show');
+        if (overlay) overlay.classList.add('show');
       });
     });
-    fab.classList.add('clicked');
-    document.getElementById('fabWrap').classList.add('fab-docked');
-    setTimeout(function(){ fab.classList.remove('clicked'); }, 400);
+    if (fab)  fab.classList.add('clicked');
+    if (wrap) wrap.classList.add('fab-docked');
+    setTimeout(function(){ if(fab) fab.classList.remove('clicked'); }, 400);
+    /* Félix: mostrar bienvenida y enfocar input */
     setTimeout(function(){
-      var s = document.getElementById('faqSearch');
-      if (s) s.focus();
-    }, 480);
+      showFelixWelcome();
+      var inp = document.getElementById('felixInput');
+      if (inp) inp.focus();
+    }, 420);
   }
 }
-
 function cerrarFAQ() {
-  var panel = document.getElementById('faqPanel');
+  var panel   = document.getElementById('faqPanel');
+  var overlay = document.getElementById('faqOverlay');
+  var wrap    = document.getElementById('fabWrap');
   panel.classList.remove('show');
   panel.classList.add('closing');
-  document.getElementById('faqOverlay').classList.remove('show');
-  document.getElementById('fabWrap').classList.remove('fab-docked');
-  /* Limpiar closing exactamente cuando termina la transición (220ms) */
-  setTimeout(function() { panel.classList.remove('closing'); }, 240);
+  if (overlay) overlay.classList.remove('show');
+  if (wrap)    wrap.classList.remove('fab-docked');
+  setTimeout(function(){ panel.classList.remove('closing'); }, 350);
 }
 
 function renderFAQ(items) {
@@ -4573,23 +4572,19 @@ function filtrarCategoria(cat, el) {
   };
 
   /* ── INICIALIZAR AL ABRIR EL PANEL ── */
-  var _felixInit = false;
-  var _origToggle = window.toggleFAQ;
-  window.toggleFAQ = function() {
-    if (_origToggle) _origToggle();
-    if (!_felixInit) {
-      _felixInit = true;
-      setTimeout(showWelcome, 400);
-    }
-    setTimeout(focusInput, 500);
-  };
-
-  /* También inicializar si el panel ya está abierto */
-  document.addEventListener('DOMContentLoaded', function() {
-    var panel = document.getElementById('faqPanel');
-    if (panel && panel.classList.contains('show')) {
+  /* Exponer showWelcome globalmente para toggleFAQ */
+  window.showFelixWelcome = function() {
+    if (!_felixInited) {
+      _felixInited = true;
       showWelcome();
     }
+  };
+  var _felixInited = false;
+
+  /* Inicializar si el panel ya está abierto al cargar */
+  document.addEventListener('DOMContentLoaded', function() {
+    var panel = document.getElementById('faqPanel');
+    if (panel && panel.classList.contains('show')) showWelcome();
   });
 
 })();
