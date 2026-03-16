@@ -4448,7 +4448,10 @@ function filtrarCategoria(cat, el) {
 
       var response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Referer': 'https://fondoune-portal.github.io/'
+        },
         body: JSON.stringify(body)
       });
 
@@ -4478,20 +4481,9 @@ function filtrarCategoria(cat, el) {
 
     } catch(err) {
       showTyping(false);
-      var errMsg = '😔 Hubo un problema al conectarme. ';
-      if (err.message && err.message.includes('API_KEY')) {
-        errMsg += 'Verifica que la API Key esté configurada correctamente.';
-      } else if (err.message && err.message.includes('quota')) {
-        errMsg += 'Se alcanzó el límite de consultas. Intenta en unos minutos.';
-      } else {
-        errMsg += 'Por favor escríbenos a creditosvivienda@fondoune.com';
-      }
-      appendMessage('felix', errMsg);
-      if (window.FU_Audit) FU_Audit.log('FELIX_ERROR', err.message || 'Error desconocido');
-    }
-
-    isLoading = false;
-    focusInput();
+      // Mostrar error real para diagnóstico
+      var errMsg = '😔 Error técnico: ' + (err.message || 'sin detalle') + '. Escríbenos a creditosvivienda@fondoune.com';
+      isLoading = false;   focusInput();
   }
 
   /* ── UI HELPERS ── */
