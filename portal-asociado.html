@@ -976,7 +976,7 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 /* ═══ FLOATING PANEL — spring fluido ═══ */
 .faq-panel {
   position: fixed;
-  right: 24px;
+  left: 24px;
   bottom: 96px;
   z-index: 601;
   width: 400px; max-width: calc(100vw - 32px);
@@ -1363,13 +1363,16 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 
 
 /* Félix anclado en esquina inferior derecha del panel cuando está abierto */
-.fab-felix-wrap.fab-docked {
-  bottom: 82px;
-  right: 20px;
+..fab-felix-wrap.fab-docked {
+  bottom: 24px;
+  left: 16px;
+  right: auto;
   z-index: 602;
-  transition: bottom 0.4s cubic-bezier(0.34,1.48,0.64,1), right 0.4s cubic-bezier(0.34,1.48,0.64,1);
-}
-.fab-felix-wrap.fab-docked .fab-help {
+  align-items: flex-start;
+  transition: bottom 0.4s cubic-bezier(0.34,1.48,0.64,1),
+              left   0.4s cubic-bezier(0.34,1.48,0.64,1),
+              right  0.4s cubic-bezier(0.34,1.48,0.64,1);
+}.fab-felix-wrap.fab-docked .fab-help {
   width: 96px;
   height: 160px;
   transition: width 0.4s cubic-bezier(0.34,1.48,0.64,1), height 0.4s cubic-bezier(0.34,1.48,0.64,1);
