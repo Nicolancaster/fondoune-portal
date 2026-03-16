@@ -3798,7 +3798,7 @@ window.addEventListener('resize', _debounce(function() {
             <div class="felix-chat-name">Félix · FondoUne IA</div>
             <div class="felix-chat-status">
               <span class="felix-status-dot"></span>
-              Asistente activo · Gemini 1.5 Flash
+              Asistente activo · Gemini 2.5 Flash
             </div>
           </div>
         </div>
@@ -3844,7 +3844,7 @@ window.addEventListener('resize', _debounce(function() {
         </button>
       </div>
       <div class="felix-input-hint">
-        Powered by Gemini 1.5 Flash · <a href="mailto:creditosvivienda@fondoune.com">¿Más ayuda?</a>
+        Powered by Gemini 2.5 Flash· <a href="mailto:creditosvivienda@fondoune.com">¿Más ayuda?</a>
       </div>
     </div>
   </div>
@@ -3855,7 +3855,7 @@ window.addEventListener('resize', _debounce(function() {
   <script>
 
 /* ═══════════════════════════════════════════════════════════════
-   FÉLIX IA — Integración Gemini 1.5 Flash
+   FÉLIX IA — Integración Gemini 2.5 Flash
    FondoUne Portal Empleados | v1.0 2026
    ⚠️  Reemplaza REEMPLAZAR_CON_TU_API_KEY con tu clave de
        Google AI Studio (aistudio.google.com)
@@ -3864,9 +3864,9 @@ window.addEventListener('resize', _debounce(function() {
   'use strict';
 
   var FELIX_CFG = {
-    API_KEY:   'AIzaSyDi9RaIjm2wYwysmjKgqHOVYijkSy-byl0',
-    MODEL:          'gemini-1.5-flash',
-    ENDPOINT:       'https://generativelanguage.googleapis.com/v1beta/models/',
+    API_KEY:  'AIzaSyDi9RaIjm2wYwysmjKgqHOVYijkSy-byl0',
+    MODEL:    'gemini-2.5-flash',
+    ENDPOINT:       'https://generativelanguage.googleapis.com/v1/models/',
     MAX_TOKENS:     600,
     TEMP:           0.65,
     HISTORY_LIMIT:  20
@@ -4104,7 +4104,7 @@ window.addEventListener('resize', _debounce(function() {
       if (b) { b.style.transition='opacity .4s'; b.style.opacity='0'; setTimeout(function(){ if(b)b.style.display='none'; }, 400); }
     }, 5000);
   
-  window.showFelixWelcome = function() { if(typeof showWelcome==='function') showWelcome(); };
+  window.showFelixWelcome = function() { if(typeof showWelcome === 'function') showWelcome(); };
 </script>
 </body>
 </html>
