@@ -3953,21 +3953,26 @@ window.addEventListener('resize', _debounce(function() {
   async function felixSendMessage(userText) {
     if (!userText.trim() || isLoading) return;
     if (FELIX_CFG.API_KEY === 'REEMPLAZAR_CON_TU_API_KEY') {
-      appendMessage('felix', '⚠️ Configura la API Key en el código.');
+      appendMsg('felix', '⚠️ Configura la API Key.');
       return;
     }
     isLoading = true;
-    appendMessage('user', userText);
-    clearInput();
-    showTyping(true);
-    scrollToBottom();
+    appendMsg('user', userText);
+    clearInput(); showTyping(true); scrollToBottom();
+
+    // Asegurar que el primer mensaje siempre sea el SYSTEM PROMPT simulado por el usuario
+    if (chatHistory.length === 0) {
+      chatHistory.push({ role: 'user', parts: [{ text: 'INSTRUCCIONES DEL SISTEMA: ' + SYSTEM_PROMPT }] });
+      chatHistory.push({ role: 'model', parts: [{ text: 'Entendido. Soy Félix y seguiré estas instrucciones.' }] });
+    }
+
     chatHistory.push({ role: 'user', parts: [{ text: userText }] });
     if (chatHistory.length > FELIX_CFG.HISTORY_LIMIT * 2)
       chatHistory = chatHistory.slice(-FELIX_CFG.HISTORY_LIMIT * 2);
+
     try {
       var url = FELIX_CFG.ENDPOINT + FELIX_CFG.MODEL + ':generateContent?key=' + FELIX_CFG.API_KEY;
       var payload = {
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: chatHistory,
         generationConfig: { temperature: FELIX_CFG.TEMP, maxOutputTokens: FELIX_CFG.MAX_TOKENS, topP: 0.9 },
         safetySettings: [
@@ -3978,8 +3983,7 @@ window.addEventListener('resize', _debounce(function() {
         ]
       };
       var response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       if (!response.ok) {
@@ -3990,16 +3994,14 @@ window.addEventListener('resize', _debounce(function() {
       var reply = (data.candidates && data.candidates[0] && data.candidates[0].content &&
                    data.candidates[0].content.parts && data.candidates[0].content.parts[0] &&
                    data.candidates[0].content.parts[0].text)
-                   ? data.candidates[0].content.parts[0].text
-                   : 'Lo siento, no pude generar una respuesta.';
+                   ? data.candidates[0].content.parts[0].text : 'No pude generar respuesta.';
       chatHistory.push({ role: 'model', parts: [{ text: reply }] });
-      showTyping(false);
-      appendMessage('felix', reply);
+      showTyping(false); appendMsg('felix', reply);
       if (window.FU_Audit) FU_Audit.log('FELIX_IA', userText.substring(0, 60));
     } catch(err) {
       showTyping(false);
-      appendMessage('felix', '😔 Error: ' + (err.message || String(err)));
-      if (window.FU_Audit) FU_Audit.log('FELIX_ERROR', err.message || 'Error desconocido');
+      appendMsg('felix', '😔 Error: ' + (err.message || String(err)));
+      if (window.FU_Audit) FU_Audit.log('FELIX_ERROR', err.message || 'Error');
     }
     isLoading = false;
     if (typeof focusInput === 'function') focusInput();
