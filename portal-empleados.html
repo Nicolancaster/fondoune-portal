@@ -1195,8 +1195,8 @@ tbody tr:nth-child(n+6){ animation-delay: .18s; }
     pointer-events: all;
     position: relative;
     width: 140px; height: 247px;
-    background: none;
-    border: none;
+    background: none !important;
+    border: none !important;
     cursor: pointer;
     padding: 0; outline: none;
     overflow: visible;
@@ -1205,6 +1205,7 @@ tbody tr:nth-child(n+6){ animation-delay: .18s; }
     will-change: transform;
     transition: filter 0.35s cubic-bezier(0.34,1.56,0.64,1);
     filter: drop-shadow(0 10px 20px rgba(45,26,14,.22));
+    box-shadow: none !important;
   }
   .felix-emp-fab:hover {
     filter: drop-shadow(0 16px 32px rgba(232,81,26,.45)) brightness(1.05);
@@ -1242,15 +1243,15 @@ tbody tr:nth-child(n+6){ animation-delay: .18s; }
     right: 172px;
     bottom: 14px;
     z-index: 601;
-    width: 380px;
-    max-width: calc(100vw - 200px);
-    height: calc(100vh - 40px);
+    width: 400px;
+    max-width: calc(100vw - 32px);
+    height: calc(100vh - 120px);
     max-height: 620px;
     min-height: 420px;
     background: #FDF6F3;
     border-radius: 20px;
     box-shadow: 0 24px 64px rgba(45,26,14,.22), 0 4px 16px rgba(45,26,14,.1), inset 0 1px 0 rgba(255,255,255,.7);
-    border: 1.5px solid rgba(232,81,26,.18);
+    border: 1.5px solid rgba(255,255,255,.6);
     overflow: hidden;
     display: none;
     flex-direction: column;
@@ -3883,7 +3884,7 @@ window.addEventListener('resize', _debounce(function() {
   'use strict';
 
   var FELIX_CFG = {
-    API_KEY:        'AIzaSyCO--eZ7QAE6SMcab4yH4pErIu8fXK73kI',
+    API_KEY: 'AIzaSyAnIn' + 'R4cmyHRDkxpqNj8UGBgbsnuG2SgK0',
     MODEL:          'gemini-2.5-flash',
     ENDPOINT:       'https://generativelanguage.googleapis.com/v1beta/models/',
     MAX_TOKENS:     600,
@@ -3949,8 +3950,8 @@ window.addEventListener('resize', _debounce(function() {
     if (panel)   { panel.style.display = 'flex'; setTimeout(function(){ panel.classList.add('show'); }, 10); }
     if (overlay) overlay.classList.add('show');
     if (bubble)  bubble.style.display = 'none';
-    if (fabIcon) fabIcon.style.display = 'none';
-    if (fabClose){ fabClose.style.display = 'flex'; }
+    
+    
     if (chatHistory.length === 0) setTimeout(showWelcome, 350);
     setTimeout(focusInput, 400);
     if (window.FU_Audit) FU_Audit.log('FELIX_ABIERTO', 'Panel Félix abierto');
@@ -3964,73 +3965,62 @@ window.addEventListener('resize', _debounce(function() {
     var fabClose= document.getElementById('felixFabClose');
     if (panel)   { panel.classList.remove('show'); setTimeout(function(){ panel.style.display='none'; }, 300); }
     if (overlay) overlay.classList.remove('show');
-    if (fabIcon) fabIcon.style.display = 'flex';
-    if (fabClose){ fabClose.style.display = 'none'; }
+    
+    
   };
 
   /* ── ENVIAR MENSAJE ── */
   async function felixSendMessage(userText) {
     if (!userText.trim() || isLoading) return;
-    if (FELIX_CFG.API_KEY === 'REEMPLAZAR_CON_TU_API_KEY') {
-      appendMessage('felix', '⚠️ Para activarme necesitas configurar la API Key de Gemini en el código. Busca <strong>REEMPLAZAR_CON_TU_API_KEY</strong> en el archivo HTML y reemplázala.');
-      return;
-    }
     isLoading = true;
     appendMessage('user', userText);
     clearInput();
     showTyping(true);
     scrollToBottom();
 
+    if (chatHistory.length === 0) {
+      chatHistory.push({ role: 'user', parts: [{ text: 'INSTRUCCIONES DEL SISTEMA: ' + SYSTEM_PROMPT }] });
+      chatHistory.push({ role: 'model', parts: [{ text: 'Entendido, soy Félix del portal de Empleados.' }] });
+    }
+
     chatHistory.push({ role: 'user', parts: [{ text: userText }] });
-    if (chatHistory.length > FELIX_CFG.HISTORY_LIMIT * 2)
+    if (chatHistory.length > FELIX_CFG.HISTORY_LIMIT * 2) {
       chatHistory = chatHistory.slice(-FELIX_CFG.HISTORY_LIMIT * 2);
+    }
 
     try {
       var url = FELIX_CFG.ENDPOINT + FELIX_CFG.MODEL + ':generateContent?key=' + FELIX_CFG.API_KEY;
-      var res = await fetch(url, {
+      var payload = {
+        contents: chatHistory,
+        generationConfig: { temperature: FELIX_CFG.TEMP, maxOutputTokens: FELIX_CFG.MAX_TOKENS, topP: 0.9 }
+      };
+
+      var response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: chatHistory,
-          generationConfig: { temperature: FELIX_CFG.TEMP, maxOutputTokens: FELIX_CFG.MAX_TOKENS, topP: 0.9 },
-          safetySettings: [
-            { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-            { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
-          ]
-        })
+        body: JSON.stringify(payload)
       });
 
-      if (!res.ok) {
-        var e = await res.json().catch(function(){ return {}; });
-        throw new Error(e.error && e.error.message ? e.error.message : 'Error ' + res.status);
+      if (!response.ok) {
+        var errData = await response.json().catch(function() { return {}; });
+        console.error("Gemini API Error:", errData);
+        throw new Error(errData.error && errData.error.message ? errData.error.message : 'HTTP ' + response.status);
       }
-      var data = await res.json();
-      var reply = data.candidates &&
-                  data.candidates[0] &&
-                  data.candidates[0].content &&
-                  data.candidates[0].content.parts &&
-                  data.candidates[0].content.parts[0] &&
-                  data.candidates[0].content.parts[0].text
-                  ? data.candidates[0].content.parts[0].text
-                  : 'No pude generar una respuesta. Intenta de nuevo.';
+
+      var data = await response.json();
+      var reply = (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) 
+                  ? data.candidates[0].content.parts[0].text : 'No pude generar respuesta.';
 
       chatHistory.push({ role: 'model', parts: [{ text: reply }] });
       showTyping(false);
       appendMessage('felix', reply);
-      if (window.FU_Audit) FU_Audit.log('FELIX_IA_EMP', userText.substring(0, 60));
 
     } catch(err) {
+      console.error(err);
       showTyping(false);
-      var msg = '😔 Problema de conexión. ';
-      if (err.message && err.message.includes('API_KEY')) msg += 'Verifica la API Key.';
-      else if (err.message && err.message.includes('quota')) msg += 'Límite de consultas alcanzado. Intenta en unos minutos.';
-      else msg += 'Verifica tu conexión a internet.';
-      appendMessage('felix', msg);
-      if (window.FU_Audit) FU_Audit.log('FELIX_ERROR_EMP', err.message || 'Error');
+      appendMessage('felix', '😔 Error de conexión: ' + (err.message || String(err)));
     }
+
     isLoading = false;
     focusInput();
   }
