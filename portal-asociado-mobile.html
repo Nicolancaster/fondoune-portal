@@ -133,8 +133,10 @@ body::after {
 /* ═══ MAIN SCROLL AREA ═══ */
 .main {
   padding-top: calc(var(--top-h) + var(--safe-top));
-  padding-bottom: calc(var(--tab-h) + var(--safe-bot) + 8px);
-  min-height: 100vh;
+  padding-bottom: calc(var(--tab-h) + var(--safe-bot) + 24px);
+  min-height: 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* ═══ VIEWS ═══ */
@@ -486,6 +488,10 @@ body::after {
   backdrop-filter: blur(24px) saturate(180%);
   border-top: 1px solid rgba(255,255,255,.06);
   display: flex; align-items: stretch;
+  pointer-events: all;
+  isolation: isolate;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 .tab-btn {
   flex: 1; display: flex; flex-direction: column; align-items: center;
@@ -493,6 +499,10 @@ body::after {
   color: rgba(255,255,255,.38); transition: color .2s;
   -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   padding-bottom: 2px;
+  pointer-events: all;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .tab-btn.active { color: var(--fu-orange); }
 .tab-ico { font-size: 20px; line-height: 1; }
@@ -544,7 +554,7 @@ body::after {
 }
 
 /* ═══ SCROLL BEHAVIOR ═══ */
-.main { -webkit-overflow-scrolling: touch; }
+.main { -webkit-overflow-scrolling: touch; overflow-x: hidden; }
 </style>
 </head>
 <body>
@@ -1037,7 +1047,7 @@ body::after {
 
 /* ═══ NAV ═══ */
 var currentView = 'solicitud';
-function goView(name) {
+window.goView = function goView(name) {
   // Views normales
   var views = ['solicitud','estado','datos','pqrs'];
   views.forEach(function(v){
@@ -1066,7 +1076,7 @@ function goView(name) {
 }
 
 /* ═══ COLLAPSIBLES (Datos) ═══ */
-function toggleCollapse(id) {
+window.toggleCollapse = function toggleCollapse(id) {
   var trigger = document.getElementById('ct-'+id);
   var body    = document.getElementById('cb-'+id);
   if(!trigger||!body) return;
@@ -1107,7 +1117,7 @@ function showToast(ico, txt) {
 
 /* ═══ PQRS tipo selector ═══ */
 var pqrsTipo = 'peticion';
-function setPqrsTipo(t) {
+window.setPqrsTipo = function setPqrsTipo(t) {
   pqrsTipo = t;
   ['peticion','queja','reclamo','sugerencia'].forEach(function(k){
     document.getElementById('pt-'+k).classList[k===t?'add':'remove']('on');
@@ -1147,14 +1157,14 @@ function activarCamposPeso() {
   });
 }
 
-function toggleRut(chk, inputId){
+window.toggleRut = function toggleRut(chk, inputId){
   var inp=$id(inputId);
   if(!inp)return;
   inp.disabled=chk.checked;
   if(chk.checked){inp.value='';inp.placeholder='No aplica';}
   else{inp.placeholder='Ej: 900.123.456-7';}
 }
-function toggleOtroBanco(sel){
+window.toggleOtroBanco = function toggleOtroBanco(sel){
   var fld=$id('fld-otroBanco');
   if(fld) fld.style.display=sel.value==='Otro'?'block':'none';
 }
@@ -1616,12 +1626,12 @@ async function felixSendMessage(userText){
   if(inp) inp.focus();
 }
 
-function felixSend(){
+window.felixSend = function felixSend(){
   var inp=$id('felixInput');
   if(inp) felixSendMessage(inp.value.trim());
 }
-function felixChip(text){ felixSendMessage(text); }
-function felixKeydown(e){
+window.felixChip = function felixChip(text){ felixSendMessage(text); }
+window.felixKeydown = function felixKeydown(e){
   if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); felixSend(); return; }
   var inp=e.target;
   setTimeout(function(){ inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,100)+'px'; },0);
