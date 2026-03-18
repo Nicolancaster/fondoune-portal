@@ -4102,10 +4102,20 @@ window.addEventListener('resize', _debounce(function() {
       });
       if (!respuesta.ok) throw new Error('Error HTTP: ' + respuesta.status);
       const datos = await respuesta.json();
+      console.log('[Felix] Respuesta Apps Script:', JSON.stringify(datos).substring(0, 200));
       if (datos.error) throw new Error(datos.error);
-      return datos.candidates.content.parts.text;
+      // Extraer texto con índices correctos + fallback defensivo
+      var texto =
+        (datos.candidates && datos.candidates[0] &&
+         datos.candidates[0].content && datos.candidates[0].content.parts &&
+         datos.candidates[0].content.parts[0] &&
+         datos.candidates[0].content.parts[0].text)
+        ? datos.candidates[0].content.parts[0].text
+        : (datos.reply || datos.text || datos.message || null);
+      if (!texto) throw new Error('Respuesta vacía del servidor');
+      return texto;
     } catch (error) {
-      console.error("Error conectando con Felix:", error);
+      console.error("[Felix] Error conectando con Apps Script:", error);
       return "⚠️ Lo siento, tuve un problema de conexión con el servidor. Por favor, intenta de nuevo.";
     }
   }
