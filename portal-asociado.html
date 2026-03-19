@@ -4419,54 +4419,41 @@ function filtrarCategoria(cat, el) {
   }
 
   /* ── 1. LLAMADA AL BACKEND (APPS SCRIPT) con fallback a Gemini directo ── */
+  /* ── 1. LLAMADA AL BACKEND (APPS SCRIPT) ── */
   async function consultarFelix(historial) {
     const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyjEtX8qXtnv29-ZeKlvJna75gFOqtjX8AO6DWm6YV_SZnkHKRscmY7qE32KEFIK8yp/exec";
+
+    // Obtener solo el último mensaje para que no falle si el historial es muy largo
     var ultimoMensaje = historial.length ? historial[historial.length - 1].parts[0].text : '';
 
-    /* ── Intento 1: Apps Script (puente serverless) ── */
     try {
       var resp = await fetch(URL_APPS_SCRIPT, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ texto: ultimoMensaje, historial: historial })
+        body: JSON.stringify({ texto: ultimoMensaje }) // Simplificado para que el Apps Script no se confunda
       });
-      if (resp.ok) {
-        var datos = await resp.json();
-        console.log('[Felix·AS] Respuesta:', JSON.stringify(datos).substring(0, 300));
-        if (!datos.error) {
-          var texto = _extraerTextoGemini(datos);
-          if (texto) return texto;
-        } else {
-          console.warn('[Felix·AS] Error del servidor:', datos.error);
-        }
-      } else {
-        console.warn('[Felix·AS] HTTP', resp.status, '— activando fallback');
-      }
-    } catch (e) {
-      console.warn('[Felix·AS] Fetch falló:', e.message, '— activando fallback Gemini directo');
-    }
 
-    /* ── Intento 2: Gemini API directo (fallback automático) ── */
-    console.log('[Felix·FB] Usando Gemini API directo');
-    try {
-      var url = FELIX_CFG.ENDPOINT + FELIX_CFG.MODEL + ':generateContent?key=' + FELIX_CFG.API_KEY;
-      var payload = {
-        contents: historial,
-        generationConfig: { temperature: FELIX_CFG.TEMP, maxOutputTokens: FELIX_CFG.MAX_TOKENS, topP: 0.9 }
-      };
-      var r2 = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (!r2.ok) throw new Error('HTTP ' + r2.status);
-      var d2 = await r2.json();
-      var texto2 = _extraerTextoGemini(d2);
-      if (texto2) return texto2;
-      throw new Error('Respuesta vacía');
-    } catch (e2) {
-      console.error('[Felix·FB] Fallback también falló:', e2.message);
-      return '⚠️ Lo siento, tuve un problema de conexión. Por favor, intenta de nuevo en unos segundos.';
+      if (!resp.ok) {
+        return "⚠️ Error del servidor HTTP: " + resp.status;
+      }
+
+      var datos = await resp.json();
+      console.log('Respuesta cruda de Google:', datos);
+
+      if (datos.error) {
+        return "⚠️ Error de Apps Script: " + datos.error;
+      }
+
+      // Intentar extraer de la estructura de Gemini
+      if (datos.candidates && datos.candidates[0] && datos.candidates[0].content && datos.candidates[0].content.parts) {
+        return datos.candidates[0].content.parts[0].text;
+      }
+
+      return "⚠️ Recibí una respuesta, pero no tenía el formato esperado.";
+
+    } catch (e) {
+      console.error('Error total:', e);
+      return '⚠️ Lo siento, tuve un problema de red al intentar contactar con el puente seguro. ' + e.message;
     }
   }
 
