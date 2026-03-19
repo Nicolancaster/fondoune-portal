@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1E0F06">
+<title>FondoUne · Portal Empleados</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script defer src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAUkk6h6IaDOvxRWRFGiV2USTzd6ZbJ3Qg",
+  authDomain: "fondoune-portal-33446.firebaseapp.com",
+  projectId: "fondoune-portal-33446",
+  storageBucket: "fondoune-portal-33446.firebasestorage.app",
+  messagingSenderId: "901082593837",
+  appId: "1:901082593837:web:91292ed594e171715fd6a4"
+};
+window._fbDB = null; window._fbIniciado = false;
+(function(){
+  try { firebase.initializeApp(FIREBASE_CONFIG); window._fbDB = firebase.firestore(); window._fbIniciado = true; }
+  catch(e){ console.warn('Firebase:', e.message); }
+})();
+/* Redirección desktop */
+(function(){
+  var isDesktop = window.innerWidth > 768 && !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(isDesktop) window.location.replace('./portal-empleados.html');
+})();
+</script>
+<style>
+/* ═══ TOKENS ═══ */
+:root {
+  --fu-orange: #E8511A; --fu-dark: #1E0F06; --fu-dark2: #2D1A0E;
+  --orange-d: #C94010; --orange-lt: #FFF0EA;
+  --bg: #F7EDE6; --surface: #fff; --border: #EDD8CC;
+  --text: #1E0F06; --muted: #7A5540; --muted-lt: #C4A090;
+  --ok: #0D7A4E; --ok-lt: #E8F8F0;
+  --warn: #B45309; --warn-lt: #FEF3C7;
+  --err: #C0392B; --err-lt: #FDECEA;
+  --info-lt: #EFF6FF; --info: #1D4ED8;
+  --desem-lt: #F0FDF4; --desem: #166534;
+  --top-h: 56px; --tab-h: 64px;
+  --safe-top: env(safe-area-inset-top,0px);
+  --safe-bot: env(safe-area-inset-bottom,0px);
+  --r: 14px; --r-sm: 9px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior:none;}
+body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 120% 80% at 50% 0%,#FDF0E8,#EDD8CC 100%);}
+body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 70% 50% at 10% 20%,rgba(232,81,26,.15) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 90% 80%,rgba(192,57,43,.12) 0%,transparent 60%);}
+
+/* ═══ LOGIN ═══ */
+#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--fu-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;}
+#loginScreen.hidden{display:none;}
+#loginScreen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(232,81,26,.2) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(192,57,43,.12) 0%,transparent 55%);pointer-events:none;}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;position:relative;z-index:1;}
+.login-mark{width:44px;height:44px;background:var(--fu-orange);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(232,81,26,.4);}
+.login-mark svg{width:22px;height:22px;}
+.login-name{font-weight:800;font-size:22px;color:#fff;}
+.login-name span{color:var(--fu-orange);}
+.login-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:28px 24px;width:100%;max-width:360px;position:relative;z-index:1;}
+.login-title{font-weight:700;font-size:18px;color:#fff;margin-bottom:4px;}
+.login-sub{font-size:13px;color:rgba(255,255,255,.45);margin-bottom:24px;}
+.login-fld{margin-bottom:16px;}
+.login-fld label{display:block;font-size:12px;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:6px;}
+.login-fld input{width:100%;padding:13px 14px;font-size:16px !important;font-family:inherit;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.12);border-radius:var(--r-sm);color:#fff;outline:none;transition:border-color .15s;}
+.login-fld input:focus{border-color:var(--fu-orange);}
+.login-fld input::placeholder{color:rgba(255,255,255,.25);}
+.login-err{background:var(--err-lt);color:var(--err);border:1px solid rgba(192,57,43,.2);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:14px;display:none;}
+.login-err.show{display:block;}
+.login-btn{width:100%;padding:14px;background:var(--fu-orange);border:none;border-radius:var(--r-sm);font-family:inherit;font-size:15px;font-weight:700;color:#fff;cursor:pointer;transition:background .15s;margin-top:4px;}
+.login-btn:active{background:var(--orange-d);}
+.login-btn:disabled{opacity:.6;pointer-events:none;}
+.login-badge{margin-top:20px;text-align:center;font-size:11px;color:rgba(255,255,255,.25);}
+
+/* ═══ TOPBAR ═══ */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;height:calc(var(--top-h) + var(--safe-top));padding-top:var(--safe-top);background:rgba(30,15,6,.92);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding-left:16px;padding-right:16px;gap:12px;}
+.topbar-logo{display:flex;align-items:center;gap:9px;text-decoration:none;}
+.logo-mark{width:30px;height:30px;border-radius:7px;background:var(--fu-orange);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(232,81,26,.4);}
+.logo-mark svg{width:15px;height:15px;}
+.logo-name{font-weight:800;font-size:14px;color:#fff;letter-spacing:-.2px;}
+.logo-name span{color:var(--fu-orange);}
+.topbar-badge{background:rgba(232,81,26,.18);border:1px solid rgba(232,81,26,.3);color:#FFBFA0;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.4px;text-transform:uppercase;}
+.topbar-user{margin-left:auto;font-size:11px;color:rgba(255,255,255,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;}
+.topbar-logout{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.25);color:#FCA5A5;font-size:11px;font-weight:700;padding:5px 10px;border-radius:7px;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+
+/* ═══ MAIN ═══ */
+.main{padding-top:calc(var(--top-h) + var(--safe-top));padding-bottom:calc(var(--tab-h) + var(--safe-bot) + 24px);min-height:0;position:relative;z-index:1;-webkit-overflow-scrolling:touch;overflow-x:hidden;}
+.view{display:none;padding:16px 16px 8px;}
+.view.active{display:block;}
+.felix-view{display:none;flex-direction:column;height:calc(100vh - var(--top-h) - var(--safe-top) - var(--tab-h) - var(--safe-bot) - 16px);overflow:hidden;padding:0!important;}
+.felix-view.active{display:flex;}
+.vh{margin-bottom:16px;}
+.vh-title{font-weight:800;font-size:21px;color:var(--text);letter-spacing:-.4px;}
+.vh-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+
+/* ═══ KPI GRID ═══ */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.kpi{background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1.5px solid rgba(255,255,255,.75);border-radius:var(--r);padding:16px;box-shadow:0 4px 16px rgba(30,15,6,.07);position:relative;overflow:hidden;}
+.kpi-accent{position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi-ico{font-size:20px;margin-bottom:8px;}
+.kpi-val{font-weight:800;font-size:28px;color:var(--text);line-height:1;}
+.kpi-lbl{font-size:11px;color:var(--muted);margin-top:3px;}
+.kpi-delta{font-size:11px;font-weight:600;margin-top:5px;}
+.kpi-delta.up{color:var(--ok);}
+.kpi-delta.warn{color:var(--warn);}
+
+/* ═══ CARDS ═══ */
+.card{background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1.5px solid rgba(255,255,255,.75);border-radius:var(--r);box-shadow:0 4px 16px rgba(30,15,6,.07);overflow:hidden;margin-bottom:14px;}
+.card-head{padding:13px 16px;border-bottom:1px solid rgba(237,216,204,.5);background:rgba(255,255,255,.4);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.card-title{font-weight:700;font-size:13px;color:var(--text);}
+.card-body{padding:14px;}
+
+/* ═══ BÚSQUEDA ═══ */
+.search-bar{display:flex;gap:8px;margin-bottom:14px;}
+.search-input{flex:1;padding:12px 14px;font-size:16px;font-family:inherit;background:rgba(255,255,255,.9);border:1.5px solid var(--border);border-radius:var(--r-sm);outline:none;color:var(--text);transition:border-color .15s;}
+.search-input:focus{border-color:var(--fu-orange);}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.filter-row::-webkit-scrollbar{display:none;}
+.filter-chip{padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;border:1.5px solid var(--border);background:rgba(255,255,255,.8);color:var(--muted);transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.filter-chip.on{background:var(--fu-dark);color:#fff;border-color:var(--fu-dark);}
+
+/* ═══ TARJETA SOLICITUD (mobile card style) ═══ */
+.sol-card{background:rgba(255,255,255,.9);border:1.5px solid rgba(255,255,255,.8);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(30,15,6,.06);}
+.sol-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.sol-name{font-weight:700;font-size:14px;color:var(--text);}
+.sol-id{font-size:10px;color:var(--muted);background:rgba(237,216,204,.5);padding:2px 7px;border-radius:5px;margin-top:3px;display:inline-block;}
+.sol-tipo{font-size:12px;color:var(--muted);margin-top:2px;}
+.sol-fecha{font-size:11px;color:var(--muted-lt);margin-top:2px;}
+.sol-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+
+/* ═══ ESTADO SELECTOR ═══ */
+.estado-sel{padding:6px 10px;font-size:16px;font-weight:700;border-radius:6px;border:1.5px solid;cursor:pointer;outline:none;font-family:inherit;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath fill='%237A5540' d='M0 0l4 5 4-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;}
+.estado-pendiente{background:#FEF3C7;color:#92400E;border-color:rgba(180,83,9,.25);}
+.estado-revision{background:var(--info-lt);color:var(--info);border-color:rgba(29,78,216,.2);}
+.estado-aprobado{background:var(--ok-lt);color:var(--ok);border-color:rgba(13,122,78,.2);}
+.estado-rechazado{background:var(--err-lt);color:var(--err);border-color:rgba(192,57,43,.2);}
+.estado-desembolsado{background:var(--desem-lt);color:var(--desem);border-color:rgba(22,101,52,.2);}
+
+/* Badge igual que estado */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.2px;}
+.badge-pendiente{background:#FEF3C7;color:#92400E;}
+.badge-revision{background:var(--info-lt);color:var(--info);}
+.badge-aprobado{background:var(--ok-lt);color:var(--ok);}
+.badge-rechazado{background:var(--err-lt);color:var(--err);}
+.badge-desembolsado{background:var(--desem-lt);color:var(--desem);}
+.badge-compra{background:var(--orange-lt);color:var(--fu-orange);}
+.badge-construccion{background:var(--ok-lt);color:var(--ok);}
+.badge-gravamen{background:#FEF3C7;color:#8B5A10;}
+
+/* ═══ BOTONES ═══ */
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:13px 18px;border:none;border-radius:var(--r-sm);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--fu-dark);color:#fff;box-shadow:0 3px 12px rgba(30,15,6,.2);}
+.btn-orange{background:var(--fu-orange);color:#fff;box-shadow:0 3px 12px rgba(232,81,26,.3);}
+.btn-outline{background:rgba(255,255,255,.7);color:var(--muted);border:1.5px solid var(--border);}
+.btn-sm{padding:8px 14px;font-size:12px;width:auto;border-radius:7px;}
+.btn-icon{width:34px;height:34px;padding:0;border-radius:8px;font-size:15px;width:auto;min-width:34px;}
+.btn:disabled{opacity:.5;pointer-events:none;}
+
+/* ═══ MODAL DETALLE ═══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(30,15,6,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:flex-end;padding:0;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateY(40px);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.modal-overlay.show .modal{transform:translateY(0);}
+.modal-handle{width:36px;height:4px;background:rgba(30,15,6,.15);border-radius:2px;margin:12px auto 0;}
+.modal-head{background:var(--fu-dark);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-weight:700;font-size:16px;color:#fff;}
+.modal-close{width:30px;height:30px;background:rgba(255,255,255,.1);border:none;border-radius:7px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.modal-body{padding:20px;}
+.detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(237,216,204,.4);gap:12px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;}
+.detail-val{font-size:13px;font-weight:600;color:var(--text);text-align:right;}
+.hist-item{padding:9px 0;border-bottom:1px solid rgba(237,216,204,.3);display:flex;gap:10px;}
+.hist-item:last-child{border-bottom:none;}
+.hist-dot{width:8px;height:8px;background:var(--fu-orange);border-radius:50%;flex-shrink:0;margin-top:4px;}
+.hist-accion{font-size:13px;font-weight:600;}
+.hist-fecha{font-size:11px;color:var(--muted);margin-top:2px;}
+.modal-footer{padding:14px 20px;border-top:1px solid rgba(237,216,204,.4);display:flex;gap:8px;}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;bottom:calc(var(--tab-h) + var(--safe-bot) + 12px);left:16px;right:16px;background:rgba(30,15,6,.93);color:#fff;padding:12px 16px;border-radius:12px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(30,15,6,.25);z-index:600;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+
+/* ═══ SBAR ═══ */
+.sbar{border-radius:var(--r-sm);padding:10px 14px;margin-bottom:12px;font-size:13px;font-weight:600;display:none;align-items:center;gap:8px;}
+.sbar.show{display:flex;}
+.sbar.loading{background:var(--warn-lt);color:var(--warn);}
+.sbar.ok{background:var(--ok-lt);color:var(--ok);}
+.sbar.err{background:var(--err-lt);color:var(--err);}
+.sbar-spin{width:15px;height:15px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══ EMPTY ═══ */
+.empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-ico{font-size:40px;margin-bottom:12px;}
+.empty-title{font-weight:700;font-size:15px;color:var(--text);margin-bottom:6px;}
+.empty-sub{font-size:12px;line-height:1.5;}
+
+/* ═══ FÉLIX ═══ */
+.felix-header{padding:12px 16px;background:rgba(30,15,6,.9);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;}
+.felix-avatar{width:36px;height:36px;background:var(--fu-orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.felix-hname{font-weight:700;font-size:13px;color:#fff;}
+.felix-hsub{font-size:11px;color:rgba(255,255,255,.45);margin-top:1px;}
+.felix-hstatus{width:8px;height:8px;background:#22C55E;border-radius:50%;box-shadow:0 0 6px #22C55E;margin-left:auto;}
+.felix-chips{padding:8px 12px;display:flex;gap:7px;overflow-x:auto;background:rgba(30,15,6,.8);border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0;scrollbar-width:none;}
+.felix-chips::-webkit-scrollbar{display:none;}
+.felix-chip{background:rgba(232,81,26,.15);border:1px solid rgba(232,81,26,.3);color:#FFBFA0;font-size:11px;font-weight:600;border-radius:20px;padding:5px 12px;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.felix-chip:active{background:rgba(232,81,26,.35);}
+.felix-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;}
+.fmsg{display:flex;gap:8px;align-items:flex-end;}
+.fmsg.user{flex-direction:row-reverse;}
+.fmsg-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.fmsg.felix .fmsg-av{background:var(--fu-orange);}
+.fmsg.user .fmsg-av{background:var(--fu-dark2);}
+.fmsg-bubble{max-width:78%;padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.5;}
+.fmsg-bubble p{margin-bottom:5px;}.fmsg-bubble p:last-child{margin-bottom:0;}
+.fmsg.felix .fmsg-bubble{background:rgba(255,255,255,.95);border:1px solid rgba(237,216,204,.6);border-bottom-left-radius:4px;color:var(--text);}
+.fmsg.user .fmsg-bubble{background:var(--fu-orange);color:#fff;border-bottom-right-radius:4px;}
+.fmsg-time{font-size:10px;color:var(--muted-lt);margin-top:3px;text-align:right;}
+.felix-typing{display:none;gap:8px;align-items:flex-end;padding:0 14px 8px;flex-shrink:0;}
+.felix-typing.show{display:flex;}
+.typing-bubble{background:rgba(255,255,255,.9);border:1px solid var(--border);border-radius:14px;border-bottom-left-radius:4px;padding:9px 13px;display:flex;gap:4px;align-items:center;}
+.tdot{width:6px;height:6px;background:var(--muted-lt);border-radius:50%;animation:tb 1.2s ease-in-out infinite;}
+.tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
+@keyframes tb{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.felix-input-area{padding:10px 12px;display:flex;gap:8px;align-items:flex-end;background:rgba(255,255,255,.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid rgba(237,216,204,.5);flex-shrink:0;}
+.felix-textarea{flex:1;padding:10px 13px;background:rgba(255,255,255,.9);border:1.5px solid var(--border);border-radius:18px;font-size:15px;font-family:inherit;color:var(--text);outline:none;resize:none;overflow:hidden;max-height:90px;line-height:1.4;transition:border-color .15s;}
+.felix-textarea:focus{border-color:var(--fu-orange);}
+.felix-send{width:42px;height:42px;background:var(--fu-orange);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;flex-shrink:0;}
+.felix-send:active{background:var(--orange-d);transform:scale(.93);}
+.felix-send svg{width:17px;height:17px;}
+
+/* ═══ TABBAR ═══ */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:200;height:calc(var(--tab-h) + var(--safe-bot));padding-bottom:var(--safe-bot);background:rgba(30,15,6,.92);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:stretch;pointer-events:all;isolation:isolate;-webkit-transform:translateZ(0);transform:translateZ(0);}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:none;color:rgba(255,255,255,.35);transition:color .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;pointer-events:all;user-select:none;-webkit-user-select:none;padding-bottom:2px;}
+.tab-btn.active{color:var(--fu-orange);}
+.tab-ico{font-size:19px;line-height:1;}
+.tab-lbl{font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="loginScreen">
+  <div class="login-logo">
+    <div class="login-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <span class="login-name">Fondo<span>Une</span></span>
+  </div>
+  <div class="login-card">
+    <div class="login-title">Portal Empleados</div>
+    <div class="login-sub">Acceso exclusivo para el equipo FondoUne</div>
+    <div class="login-err" id="loginErr">Usuario o contraseña incorrectos</div>
+    <div class="login-fld">
+      <label>Usuario</label>
+      <input id="loginUser" placeholder="Ej: admin" autocomplete="username" autocapitalize="none">
+    </div>
+    <div class="login-fld">
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">🔐 Ingresar</button>
+  </div>
+  <div class="login-badge">🔒 Acceso restringido · FondoUne 2025</div>
+</div>
+
+<!-- ═══ TOPBAR ═══ -->
+<header class="topbar" id="mainTopbar" style="display:none">
+  <div class="topbar-logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <span class="logo-name">Fondo<span>Une</span></span>
+  </div>
+  <span class="topbar-badge">Empleados</span>
+  <span class="topbar-user" id="topbarUser">—</span>
+  <button class="topbar-logout" onclick="doLogout()">🚪 Salir</button>
+</header>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main" id="mainScroll" style="display:none">
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="view active" id="view-dash">
+    <div class="vh">
+      <div class="vh-title">📊 Dashboard</div>
+      <div class="vh-sub" id="dashFecha">—</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-accent" style="background:var(--fu-orange)"></div>
+        <div class="kpi-ico">📋</div>
+        <div class="kpi-val" id="kpiTotal">0</div>
+        <div class="kpi-lbl">Total Solicitudes</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-accent" style="background:#F59E0B"></div>
+        <div class="kpi-ico">⏳</div>
+        <div class="kpi-val" id="kpiPend">0</div>
+        <div class="kpi-lbl">Pendientes</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-accent" style="background:var(--ok)"></div>
+        <div class="kpi-ico">✅</div>
+        <div class="kpi-val" id="kpiApro">0</div>
+        <div class="kpi-lbl">Aprobadas</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-accent" style="background:#166534"></div>
+        <div class="kpi-ico">💰</div>
+        <div class="kpi-val" id="kpiDesem">0</div>
+        <div class="kpi-lbl">Desembolsadas</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">📅 Últimas Solicitudes</span></div>
+      <div class="card-body" id="dashRecent">
+        <div class="empty"><div class="empty-ico">📭</div><div class="empty-title">Sin datos</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SOLICITUDES ══ -->
+  <div class="view" id="view-solicitudes">
+    <div class="vh">
+      <div class="vh-title">📋 Solicitudes</div>
+      <div class="vh-sub">Gestiona y actualiza el estado de cada solicitud</div>
+    </div>
+    <div class="search-bar">
+      <input class="search-input" id="searchInput" placeholder="Buscar nombre, cédula, radicado…" oninput="renderLista()" autocomplete="off">
+      <button class="btn btn-outline btn-sm" onclick="cargarDesdeFirebase()">🔄</button>
+    </div>
+    <div class="filter-row" id="filterRow">
+      <div class="filter-chip on" data-estado="" onclick="setFiltroEstado(this,'')">Todos</div>
+      <div class="filter-chip" data-estado="pendiente" onclick="setFiltroEstado(this,'pendiente')">⏳ Pendiente</div>
+      <div class="filter-chip" data-estado="revision" onclick="setFiltroEstado(this,'revision')">🔍 Revisión</div>
+      <div class="filter-chip" data-estado="aprobado" onclick="setFiltroEstado(this,'aprobado')">✅ Aprobado</div>
+      <div class="filter-chip" data-estado="rechazado" onclick="setFiltroEstado(this,'rechazado')">❌ Rechazado</div>
+      <div class="filter-chip" data-estado="desembolsado" onclick="setFiltroEstado(this,'desembolsado')">💰 Desembolsado</div>
+    </div>
+    <div id="listaContainer">
+      <div class="empty"><div class="empty-ico">⏳</div><div class="empty-title">Cargando…</div></div>
+    </div>
+  </div>
+
+  <!-- ══ FÉLIX ══ -->
+  <div class="felix-view view" id="view-felix">
+    <div class="felix-header">
+      <div class="felix-avatar">🤖</div>
+      <div>
+        <div class="felix-hname">Félix · FondoUne IA</div>
+        <div class="felix-hsub">Asistente activo · Gemini 2.5 Flash</div>
+      </div>
+      <div class="felix-hstatus"></div>
+    </div>
+    <div class="felix-chips">
+      <div class="felix-chip" onclick="felixChip('¿Cómo cambio el estado de una solicitud?')">🔄 Estados</div>
+      <div class="felix-chip" onclick="felixChip('¿Cómo descargo el documento Word de una solicitud?')">📄 Documentos</div>
+      <div class="felix-chip" onclick="felixChip('¿Cuántas solicitudes hay pendientes?')">📊 KPIs</div>
+      <div class="felix-chip" onclick="felixChip('¿Cuáles son los tipos de crédito?')">🏠 Créditos</div>
+    </div>
+    <div class="felix-messages" id="felixMessages"></div>
+    <div class="felix-typing" id="felixTyping">
+      <div class="fmsg-av" style="background:var(--fu-orange)">🤖</div>
+      <div class="typing-bubble"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>
+    </div>
+    <div class="felix-input-area">
+      <textarea class="felix-textarea" id="felixInput" placeholder="Pregúntale algo a Félix…" rows="1" onkeydown="felixKeydown(event)"></textarea>
+      <button class="felix-send" onclick="felixSend()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══ TABBAR ═══ -->
+<nav class="tabbar" id="mainTabbar" style="display:none">
+  <button class="tab-btn active" id="tab-dash" onclick="goView('dash')">
+    <span class="tab-ico">📊</span><span class="tab-lbl">Dashboard</span>
+  </button>
+  <button class="tab-btn" id="tab-solicitudes" onclick="goView('solicitudes')">
+    <span class="tab-ico">📋</span><span class="tab-lbl">Solicitudes</span>
+  </button>
+  <button class="tab-btn" id="tab-felix" onclick="goView('felix')">
+    <span class="tab-ico">🤖</span><span class="tab-lbl">Félix</span>
+  </button>
+</nav>
+
+<!-- ═══ MODAL DETALLE ═══ -->
+<div class="modal-overlay" id="modalOverlay" onclick="cerrarModal(event)">
+  <div class="modal" id="modalContent">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <span class="modal-title" id="modalTitle">Detalle</span>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><span id="toastIco"></span><span id="toastTxt"></span></div>
+
+<script>
+/* ═══════════════════════════════════════
+   MÓDULO DE SEGURIDAD Y AUDITORÍA
+═══════════════════════════════════════ */
+(function(){
+  'use strict';
+  window.FU_Sanitize = function(s){ if(typeof s!=='string')return ''; var e=document.createElement('div'); e.textContent=s; return e.innerHTML.trim(); };
+  window.FU_Audit = {
+    log: function(a,d){ try{ var l=JSON.parse(localStorage.getItem('fu_empleados_audit')||'[]'); l.unshift({ts:new Date().toISOString(),accion:a,detalle:d||''}); if(l.length>100)l=l.slice(0,100); localStorage.setItem('fu_empleados_audit',JSON.stringify(l)); }catch(e){} },
+    get: function(){ try{ return JSON.parse(localStorage.getItem('fu_empleados_audit')||'[]'); }catch(e){ return []; } }
+  };
+})();
+
+/* ═══ DATOS BASE ═══ */
+var DB_KEY = 'fondoune_solicitudes';
+var SESS_KEY = 'fu_empleados_sess_mobile';
+var APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbyjEtX8qXtnv29-ZeKlvJna75gFOqtjX8AO6DWm6YV_SZnkHKRscmY7qE32KEFIK8yp/exec';
+
+/* ═══ CREDENCIALES ═══ */
+var USUARIOS = {
+  'admin':   { hash: 'e5dc2f73f21351f6eea4d250725e701fd5ba6f9442f964f3eb6f7db510186d0c', nombre: 'Administrador', rol: 'Admin' },
+  'asesor1': { hash: 'c07e647705fd1afdba00420755aeeb10e347e387ba17f3f463eaa3a5ddc32504', nombre: 'Asesor Créditos 1', rol: 'Asesor' },
+  'asesor2': { hash: '52fb1bd7895fe2b4e69b2f93b28c9f77122d6c8c5ad1da6ce88bd4fec08910f2', nombre: 'Asesor Créditos 2', rol: 'Asesor' }
+};
+
+/* ═══ HELPERS ═══ */
+function $id(id){ return document.getElementById(id); }
+function fbActivo(){ return window._fbIniciado && window._fbDB; }
+function cargarDB(){ try{ return JSON.parse(localStorage.getItem(DB_KEY)||'[]'); }catch(e){ return []; } }
+function guardarDB(d){ try{ localStorage.setItem(DB_KEY,JSON.stringify(d)); }catch(e){} }
+function fmtFecha(iso){ if(!iso)return '—'; return new Date(iso).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}); }
+function getUsuario(){ try{ var s=JSON.parse(localStorage.getItem(SESS_KEY)||'null'); return s?s.nombre+' ('+s.rol+')':'Empleado'; }catch(e){ return 'Empleado'; } }
+
+var _toastT;
+function showToast(txt, ico){
+  $id('toastIco').textContent = ico||'ℹ️';
+  $id('toastTxt').textContent = txt;
+  var t = $id('toast'); t.classList.add('show');
+  clearTimeout(_toastT);
+  _toastT = setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+/* ═══ SHA-256 para login ═══ */
+async function sha256(msg){
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+/* ═══ LOGIN ═══ */
+async function doLogin(){
+  var user = ($id('loginUser').value||'').trim().toLowerCase();
+  var pass = $id('loginPass').value||'';
+  var btn = $id('loginBtn');
+  var err = $id('loginErr');
+  if(!user||!pass){ err.classList.add('show'); err.textContent='Ingresa usuario y contraseña'; return; }
+  btn.disabled = true; btn.textContent = '⏳ Verificando…';
+  var datos = USUARIOS[user];
+  if(!datos){ err.classList.add('show'); err.textContent='Usuario no encontrado'; btn.disabled=false; btn.textContent='🔐 Ingresar'; return; }
+  var hash = await sha256(pass);
+  if(hash !== datos.hash){ err.classList.add('show'); err.textContent='Contraseña incorrecta'; btn.disabled=false; btn.textContent='🔐 Ingresar'; return; }
+  // Guardar sesión
+  localStorage.setItem(SESS_KEY, JSON.stringify({ usuario:user, nombre:datos.nombre, rol:datos.rol, ts:Date.now() }));
+  err.classList.remove('show');
+  $id('loginScreen').classList.add('hidden');
+  iniciarPortal(datos);
+  FU_Audit.log('LOGIN','Sesión iniciada por '+datos.nombre);
+}
+
+function doLogout(){
+  localStorage.removeItem(SESS_KEY);
+  FU_Audit.log('LOGOUT','Sesión cerrada');
+  location.reload();
+}
+
+/* ═══ VERIFICAR SESIÓN AL CARGAR ═══ */
+window.addEventListener('DOMContentLoaded', function(){
+  $id('loginPass').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+  $id('loginUser').addEventListener('keydown', function(e){ if(e.key==='Enter') $id('loginPass').focus(); });
+  var sess = null;
+  try{ sess = JSON.parse(localStorage.getItem(SESS_KEY)||'null'); }catch(e){}
+  if(sess && (Date.now()-sess.ts) < 8*60*60*1000){
+    $id('loginScreen').classList.add('hidden');
+    iniciarPortal({ nombre:sess.nombre, rol:sess.rol });
+  }
+});
+
+function iniciarPortal(datos){
+  $id('mainTopbar').style.display = 'flex';
+  $id('mainScroll').style.display = 'block';
+  $id('mainTabbar').style.display = 'flex';
+  $id('topbarUser').textContent = datos.nombre;
+  $id('dashFecha').textContent = 'Actualizado: ' + new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  cargarDesdeFirebase();
+  actualizarKPIs();
+}
+
+/* ═══ NAV ═══ */
+var currentView = 'dash';
+window.goView = function(name){
+  ['dash','solicitudes','felix'].forEach(function(v){
+    var el=$id('view-'+v), tb=$id('tab-'+v);
+    if(el) el.classList[v===name?'add':'remove']('active');
+    if(tb) tb.classList[v===name?'add':'remove']('active');
+  });
+  if(name==='felix' && window.felixHistory.length===0) setTimeout(felixBienvenida, 350);
+  if(name==='felix') setTimeout(function(){ var i=$id('felixInput'); if(i)i.focus(); },450);
+  var main=$id('mainScroll'); if(main&&name!=='felix') main.scrollTop=0;
+  currentView = name;
+};
+
+/* ═══ FIREBASE SYNC ═══ */
+function cargarDesdeFirebase(){
+  if(!fbActivo()) return;
+  window._fbDB.collection('solicitudes').orderBy('fechaRegistro','desc').limit(100).get()
+    .then(function(snap){
+      var arr=[];
+      snap.forEach(function(doc){ arr.push(doc.data()); });
+      if(arr.length){ guardarDB(arr); actualizarKPIs(); renderLista(); }
+    }).catch(function(e){ console.warn('Firebase load:', e); });
+}
+
+/* ═══ KPIs ═══ */
+function actualizarKPIs(){
+  var db = cargarDB().filter(function(s){ return s.tipo!=='pqrs'; });
+  $id('kpiTotal').textContent = db.length;
+  $id('kpiPend').textContent  = db.filter(function(s){ return s.estado==='pendiente'; }).length;
+  $id('kpiApro').textContent  = db.filter(function(s){ return s.estado==='aprobado'; }).length;
+  $id('kpiDesem').textContent = db.filter(function(s){ return s.estado==='desembolsado'; }).length;
+  // Recientes
+  var recientes = db.slice(0,5);
+  var cont = $id('dashRecent');
+  if(!recientes.length){ cont.innerHTML='<div class="empty"><div class="empty-ico">📭</div><div class="empty-title">Sin solicitudes</div></div>'; return; }
+  cont.innerHTML = recientes.map(function(s){
+    return '<div class="detail-row"><div><div style="font-weight:700;font-size:13px">'+s.nombreTitular+'</div><div style="font-size:11px;color:var(--muted)">'+s.radicado+' · '+fmtFecha(s.fechaRegistro)+'</div></div><span class="badge badge-'+s.estado+'">'+s.estado+'</span></div>';
+  }).join('');
+}
+
+/* ═══ FILTRO ESTADO ═══ */
+var filtroEstadoActual = '';
+window.setFiltroEstado = function(el, estado){
+  filtroEstadoActual = estado;
+  document.querySelectorAll('.filter-chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+  renderLista();
+};
+
+/* ═══ RENDER LISTA SOLICITUDES ═══ */
+function renderLista(){
+  var db = cargarDB().filter(function(s){ return s.tipo!=='pqrs'; });
+  var q = (($id('searchInput')||{}).value||'').toLowerCase().trim();
+  if(q) db = db.filter(function(s){
+    return (s.nombreTitular||'').toLowerCase().includes(q)||
+           (s.cedula||'').includes(q)||
+           (s.radicado||'').toLowerCase().includes(q)||
+           (s.id||'').toLowerCase().includes(q);
+  });
+  if(filtroEstadoActual) db = db.filter(function(s){ return s.estado===filtroEstadoActual; });
+  var cont = $id('listaContainer');
+  if(!db.length){
+    cont.innerHTML='<div class="empty"><div class="empty-ico">🔎</div><div class="empty-title">Sin resultados</div><div class="empty-sub">Prueba otro filtro o búsqueda</div></div>';
+    return;
+  }
+  cont.innerHTML = db.slice(0,40).map(function(s){
+    var tipoB = s.tipo==='compra'?'badge-compra':s.tipo==='construccion'?'badge-construccion':'badge-gravamen';
+    return '<div class="sol-card">'
+      +'<div class="sol-card-top">'
+      +'<div><div class="sol-name">'+s.nombreTitular+'</div>'
+      +'<div class="sol-id">'+s.radicado+'</div>'
+      +'<div class="sol-tipo"><span class="badge '+tipoB+'">'+s.tipoLabel+'</span></div>'
+      +'<div class="sol-fecha">📅 '+fmtFecha(s.fechaRegistro)+'</div></div>'
+      +'</div>'
+      +'<select class="estado-sel estado-'+s.estado+'" onchange="cambiarEstado(\''+s.id+'\',this)">'
+      +'<option value="pendiente"'+(s.estado==='pendiente'?' selected':'')+'>⏳ Pendiente</option>'
+      +'<option value="revision"'+(s.estado==='revision'?' selected':'')+'>🔍 En Revisión</option>'
+      +'<option value="aprobado"'+(s.estado==='aprobado'?' selected':'')+'>✅ Aprobado</option>'
+      +'<option value="rechazado"'+(s.estado==='rechazado'?' selected':'')+'>❌ Rechazado</option>'
+      +'<option value="desembolsado"'+(s.estado==='desembolsado'?' selected':'')+'>💰 Desembolsado</option>'
+      +'</select>'
+      +'<div class="sol-actions">'
+      +'<button class="btn btn-outline btn-sm btn-icon" onclick="verDetalle(\''+s.id+'\')">🔍 Ver</button>'
+      +'<button class="btn btn-primary btn-sm btn-icon" onclick="descargarDoc(\''+s.id+'\')">📄 Word</button>'
+      +'</div></div>';
+  }).join('');
+}
+
+/* ═══ CAMBIAR ESTADO ═══ */
+window.cambiarEstado = function(id, sel){
+  var db = cargarDB();
+  var idx = db.findIndex(function(s){ return s.id===id; });
+  if(idx<0) return;
+  var anterior = db[idx].estado;
+  db[idx].estado = sel.value;
+  sel.className = 'estado-sel estado-'+sel.value;
+  if(!db[idx].historial) db[idx].historial=[];
+  db[idx].historial.unshift({ accion:'Estado: '+anterior+' → '+sel.value, fecha:new Date().toISOString(), usuario:getUsuario() });
+  guardarDB(db);
+  if(fbActivo()) window._fbDB.collection('solicitudes').doc(id).set(db[idx],{merge:true}).catch(function(){});
+  FU_Audit.log('ESTADO_CAMBIADO','ID:'+id+' '+anterior+'→'+sel.value);
+  actualizarKPIs();
+  showToast('Estado → '+sel.value,'🔄');
+};
+
+/* ═══ VER DETALLE ═══ */
+window.verDetalle = function(id){
+  var db = cargarDB();
+  var sol = db.find(function(s){ return s.id===id; });
+  if(!sol) return;
+  var campos = [
+    ['Nombre',sol.nombreTitular||'—'],['Cédula',sol.cedula||'—'],
+    ['Radicado',sol.radicado||'—'],['Tipo',sol.tipoLabel||'—'],
+    ['Teléfono',sol.telefono||'—'],['Correo',sol.correo||'—'],
+    ['Dirección',sol.direccion||'—'],['Asesor',sol.asesor||'—'],
+    ['Estado',sol.estado||'—'],['Fecha',fmtFecha(sol.fechaRegistro)],
+    ['Fecha Límite',fmtFecha(sol.fechaLimite)||'—']
+  ];
+  if(sol.nombreVendedor) campos.push(['Vendedor',sol.nombreVendedor]);
+  if(sol.nombreCodeudor) campos.push(['Codeudor',sol.nombreCodeudor]);
+  if(sol.entidadFinanciera) campos.push(['Banco',sol.entidadFinanciera]);
+  if(sol.valorCredito) campos.push(['Valor Crédito',sol.valorCredito]);
+  if(sol.valorPresupuesto) campos.push(['Presupuesto',sol.valorPresupuesto]);
+
+  var hist = (sol.historial||[]).slice(0,6).map(function(h){
+    return '<div class="hist-item"><div class="hist-dot"></div><div><div class="hist-accion">'+h.accion+'</div><div class="hist-fecha">'+fmtFecha(h.fecha)+' · '+(h.usuario||'—')+'</div></div></div>';
+  }).join('');
+
+  $id('modalTitle').textContent = sol.nombreTitular;
+  $id('modalBody').innerHTML =
+    campos.map(function(c){ return '<div class="detail-row"><span class="detail-lbl">'+c[0]+'</span><span class="detail-val">'+c[1]+'</span></div>'; }).join('')
+    +(hist?'<div style="margin-top:14px"><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Historial</div>'+hist+'</div>':'');
+  $id('modalFooter').innerHTML =
+    '<button class="btn btn-primary btn-sm" onclick="descargarDoc(\''+id+'\');cerrarModal()">📄 Descargar Word</button>'
+    +'<button class="btn btn-outline btn-sm" onclick="cerrarModal()">Cerrar</button>';
+  $id('modalOverlay').classList.add('show');
+};
+
+window.cerrarModal = function(e){
+  if(e && e.target !== $id('modalOverlay')) return;
+  $id('modalOverlay').classList.remove('show');
+};
+
+/* ═══ DESCARGAR WORD ═══ */
+window.descargarDoc = function(id){
+  var db = cargarDB();
+  var sol = db.find(function(s){ return s.id===id; });
+  if(!sol){ showToast('Solicitud no encontrada','⚠️'); return; }
+  var lib = (typeof docx!=='undefined'&&docx.Document)?docx:window;
+  if(!lib.Document){ showToast('Librería cargando, intenta en 2s','⚠️'); return; }
+  var DD=lib.Document, PK=lib.Packer, PA=lib.Paragraph, RN=lib.TextRun, WT=lib.WidthType, AL=lib.AlignmentType;
+  var filas = [
+    ['N° Radicado',sol.radicado||''],['Tipo',sol.tipoLabel||''],
+    ['Nombre Titular',sol.nombreTitular||''],['Cédula',sol.cedula||''],
+    ['Teléfono',sol.telefono||''],['Correo',sol.correo||''],
+    ['Dirección',sol.direccion||''],['Asesor',sol.asesor||''],
+    ['Estado',sol.estado||''],['Fecha Registro',fmtFecha(sol.fechaRegistro)],
+    ['Fecha Límite',fmtFecha(sol.fechaLimite)||'—']
+  ];
+  if(sol.nombreVendedor) filas.push(['Vendedor',sol.nombreVendedor]);
+  if(sol.valorCredito) filas.push(['Valor Crédito',sol.valorCredito]);
+  if(sol.valorPresupuesto) filas.push(['Presupuesto',sol.valorPresupuesto]);
+  var rows = filas.map(function(r){
+    return new lib.TableRow({children:[
+      new lib.TableCell({children:[new PA({children:[new RN({text:r[0],bold:true,size:20})]})],width:{size:38,type:WT.PERCENTAGE}}),
+      new lib.TableCell({children:[new PA({children:[new RN({text:r[1],size:20})]})],width:{size:62,type:WT.PERCENTAGE}})
+    ]});
+  });
+  var doc = new DD({sections:[{properties:{},children:[
+    new PA({children:[new RN({text:'FondoUne — Solicitud de Crédito',bold:true,size:32,color:'E8511A'})],alignment:AL.CENTER}),
+    new PA({children:[new RN({text:'Portal de Empleados',size:22,color:'7A5540'})],alignment:AL.CENTER}),
+    new PA({children:[]}),
+    new lib.Table({rows:rows,width:{size:100,type:WT.PERCENTAGE}})
+  ]}]});
+  PK.toBlob(doc).then(function(blob){
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href=url; a.download='FondoUne_'+sol.radicado+'_'+(sol.nombreTitular||'').split(' ')[0]+'.docx';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); },1000);
+    showToast('Documento descargado','📄');
+    FU_Audit.log('DOCX_DESCARGADO','Radicado: '+sol.radicado);
+  }).catch(function(e){ showToast('Error: '+e.message,'❌'); });
+};
+
+/* ═══ FÉLIX IA ═══ */
+var FELIX_CFG = {
+  API_KEY: 'AIzaSyAnIn'+'R4cmyHRDkxpqNj8UGBgbsnuG2SgK0',
+  MODEL: 'gemini-2.5-flash',
+  ENDPOINT: 'https://generativelanguage.googleapis.com/v1beta/models/',
+  MAX_TOKENS: 600, TEMP: 0.65, HISTORY_LIMIT: 20
+};
+var FELIX_SYSTEM = [
+  'Eres Félix, el asistente virtual oficial de FondoUne (Fondo de Empleados de UNE).',
+  'Estás en el PORTAL MÓVIL DE EMPLEADOS — hablas con el equipo interno de FondoUne.',
+  'Eres amable, preciso, profesional y hablas en español colombiano.',
+  'Tu misión es ayudar a los empleados a gestionar solicitudes de crédito de vivienda.',
+  '',
+  'FUNCIONES DEL PORTAL:',
+  '1. Ver y gestionar solicitudes de crédito de los asociados.',
+  '2. Cambiar estados: Pendiente → En Revisión → Aprobado/Rechazado → Desembolsado.',
+  '3. Descargar documentos Word de cada solicitud.',
+  '4. Ver historial de acciones por solicitud.',
+  '5. Ver KPIs en el Dashboard.',
+  '',
+  'ESTADOS DE SOLICITUD:',
+  '- Pendiente: Recién radicada.',
+  '- En Revisión: El equipo está analizando.',
+  '- Aprobado: Aprobada, pendiente de desembolso.',
+  '- Rechazado: No aprobada.',
+  '- Desembolsado: Crédito entregado.',
+  '',
+  'REGLAS: Sé conciso (máx 3-4 párrafos). Usa emojis con moderación.',
+  'Estás en el PORTAL MÓVIL — el empleado accede desde su celular.',
+].join('\n');
+
+window.felixHistory = [];
+var felixLoading = false;
+
+function felixBienvenida(){
+  if($id('felixMessages').children.length > 0) return;
+  felixAppend('felix','¡Hola! 👋 Soy **Félix**, tu asistente del Portal de Empleados.\n\nPuedo ayudarte con la gestión de solicitudes, cambios de estado, descarga de documentos y más. ¿En qué te puedo ayudar?');
+}
+function felixAppend(sender,text){
+  var list=$id('felixMessages'); if(!list) return;
+  var isF=sender==='felix', now=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  var div=document.createElement('div'); div.className='fmsg '+(isF?'felix':'user');
+  div.innerHTML='<div class="fmsg-av">'+(isF?'🤖':'👤')+'</div>'
+    +'<div><div class="fmsg-bubble">'+felixFmt(text)+'</div><div class="fmsg-time">'+now+'</div></div>';
+  list.appendChild(div); felixScroll();
+}
+function felixFmt(t){
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>').replace(/^/,'<p>').replace(/$/,'</p>');
+}
+function felixScroll(){ setTimeout(function(){ var l=$id('felixMessages'); if(l)l.scrollTop=l.scrollHeight; },60); }
+function felixTypingShow(show){ var el=$id('felixTyping'); if(el) el.classList.toggle('show',show); }
+function _extraerTexto(d){
+  if(!d) return null;
+  if(d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts&&d.candidates[0].content.parts[0])
+    return d.candidates[0].content.parts[0].text||null;
+  return d.reply||d.respuesta||d.text||d.message||null;
+}
+async function felixQuery(historia){
+  var ultimo = historia.length ? historia[historia.length-1].parts[0].text : '';
+  /* Intento 1: Apps Script */
+  try{
+    var r = await fetch(APPS_SCRIPT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({texto:ultimo,historial:historia})});
+    if(r.ok){ var d=await r.json(); if(!d.error){ var t=_extraerTexto(d); if(t) return t; } else console.warn('[Felix·AS]',d.error); }
+    else console.warn('[Felix·AS] HTTP',r.status);
+  }catch(e){ console.warn('[Felix·AS] falló:',e.message); }
+  /* Intento 2: Gemini directo */
+  try{
+    var url=FELIX_CFG.ENDPOINT+FELIX_CFG.MODEL+':generateContent?key='+FELIX_CFG.API_KEY;
+    var r2=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:historia,generationConfig:{temperature:FELIX_CFG.TEMP,maxOutputTokens:FELIX_CFG.MAX_TOKENS,topP:0.9}})});
+    if(!r2.ok) throw new Error('HTTP '+r2.status);
+    var d2=await r2.json(); var t2=_extraerTexto(d2); if(t2) return t2;
+    throw new Error('Respuesta vacía');
+  }catch(e2){ console.error('[Felix·FB]',e2.message); return '⚠️ Lo siento, tuve un problema de conexión. Intenta de nuevo.'; }
+}
+async function felixSendMessage(userText){
+  if(!userText.trim()||felixLoading) return;
+  felixLoading=true;
+  felixAppend('user',userText);
+  var inp=$id('felixInput'); if(inp){inp.value='';inp.style.height='auto';}
+  felixTypingShow(true); felixScroll();
+  if(window.felixHistory.length===0){
+    window.felixHistory.push({role:'user',parts:[{text:'INSTRUCCIONES: '+FELIX_SYSTEM}]});
+    window.felixHistory.push({role:'model',parts:[{text:'Entendido, soy Félix del Portal Móvil de Empleados.'}]});
+  }
+  window.felixHistory.push({role:'user',parts:[{text:userText}]});
+  if(window.felixHistory.length>FELIX_CFG.HISTORY_LIMIT*2) window.felixHistory=window.felixHistory.slice(-FELIX_CFG.HISTORY_LIMIT*2);
+  FU_Audit.log('FELIX_IA','Consulta: '+userText.substring(0,60));
+  var reply=await felixQuery(window.felixHistory);
+  window.felixHistory.push({role:'model',parts:[{text:reply}]});
+  felixTypingShow(false); felixAppend('felix',reply); felixLoading=false;
+  if(inp) inp.focus();
+}
+window.felixSend = function(){ var i=$id('felixInput'); if(i) felixSendMessage(i.value.trim()); };
+window.felixChip = function(t){ felixSendMessage(t); };
+window.felixKeydown = function(e){
+  if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); window.felixSend(); return; }
+  var i=e.target; setTimeout(function(){ i.style.height='auto'; i.style.height=Math.min(i.scrollHeight,90)+'px'; },0);
+};
+</script>
+</body>
+</html>
