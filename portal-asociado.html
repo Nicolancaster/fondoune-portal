@@ -2365,7 +2365,7 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
   <div class="hdr-div"></div>
   <div class="hdr-portals">
     <div class="hdr-pill">🏠 Portal Asociados</div>
-    <a href="portal-empleados.html" class="emp-link">🔐 Portal Empleados →</a>
+    <a href="./portal-empleados.html" class="emp-link">🔐 Portal Empleados →</a>
   </div>
 </header>
 
@@ -3712,7 +3712,7 @@ var PQRS = (function() {
             <div class="felix-chat-name">Félix · FondoUne IA</div>
             <div class="felix-chat-status">
               <span class="felix-status-dot"></span>
-              Asistente activo · Gemini 2.5 Flash
+              Asistente activo · Gemini 2.0 Flash
             </div>
           </div>
         </div>
@@ -3760,13 +3760,13 @@ var PQRS = (function() {
         </button>
       </div>
       <div class="felix-input-hint">
-        Powered by Gemini 2.5 Flash · <a href="mailto:creditosvivienda@fondoune.com">¿Necesitas más ayuda?</a>
+        Powered by Gemini 2.0 Flash · <a href="/cdn-cgi/l/email-protection#d8bbaabdbcb1acb7abaeb1aeb1bdb6bcb998beb7b6bcb7adb6bdf6bbb7b5">¿Necesitas más ayuda?</a>
       </div>
     </div>
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ═══ SISTEMA FAQ ═══ */
 var FAQ_DATA = [
   /* ── DOCUMENTOS GENERALES ── */
@@ -4343,7 +4343,7 @@ function filtrarCategoria(cat, el) {
   <script>
 
 /* ═══════════════════════════════════════════════════════════════
-   FÉLIX IA — Integración Gemini 2.5 Flash
+   FÉLIX IA — Integración Gemini 2.0 Flash
    FondoUne Portal | v1.0 2026
    ⚠️  Reemplaza AIzaSyCVnJ5PvN1YpszBH_guLyb9tQfCqfuM1xw con tu clave de
        Google AI Studio (aistudio.google.com)
@@ -4353,12 +4353,13 @@ function filtrarCategoria(cat, el) {
 
   /* ── CONFIGURACIÓN ── */
   var FELIX_CFG = {
-    API_KEY:   'AIzaSyCVnJ5PvN1YpszBH_guLyb9tQfCqfuM1xw',
-    MODEL:     'gemini-2.0-flash',
-    ENDPOINT:  'https://generativelanguage.googleapis.com/v1beta/models/',
+    API_KEY:      'AIzaSyCVnJ5PvN1YpszBH_guLyb9tQfCqfuM1xw',
+    MODEL:        'gemini-2.5-flash',
+    ENDPOINT:     'https://generativelanguage.googleapis.com/v1beta/models/',
+    APPS_SCRIPT:  'https://script.google.com/macros/s/AKfycbyjEtX8qXtnv29-ZeKlvJna75gFOqtjX8AO6DWm6YV_SZnkHKRscmY7qE32KEFIK8yp/exec',
     MAX_TOKENS: 512,
     TEMP:       0.7,
-    HISTORY_LIMIT: 20   // máx turnos en memoria
+    HISTORY_LIMIT: 20
   };
 
   /* ── CONTEXTO DEL SISTEMA — Félix conoce a FondoUne ── */
@@ -4408,112 +4409,118 @@ function filtrarCategoria(cat, el) {
   /* ── ESTADO ── */
   var isLoading = false;
 
-  function _extraerTextoGemini(datos) {
-    if (!datos) return null;
-    if (datos.candidates && datos.candidates[0] &&
-        datos.candidates[0].content && datos.candidates[0].content.parts &&
-        datos.candidates[0].content.parts[0])
-      return datos.candidates[0].content.parts[0].text || null;
-    return datos.reply || datos.respuesta || datos.text || datos.message ||
-           datos.output || datos.result || null;
-  }
-
-  /* ── 1. LLAMADA AL BACKEND (APPS SCRIPT) con fallback a Gemini directo ── */
-  /* ── 1. LLAMADA AL BACKEND (APPS SCRIPT) ── */
-  async function consultarFelix(historial) {
-    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyjEtX8qXtnv29-ZeKlvJna75gFOqtjX8AO6DWm6YV_SZnkHKRscmY7qE32KEFIK8yp/exec";
-
-    // Obtener solo el último mensaje para que no falle si el historial es muy largo
-    var ultimoMensaje = historial.length ? historial[historial.length - 1].parts[0].text : '';
-
-    try {
-      var resp = await fetch(URL_APPS_SCRIPT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ texto: ultimoMensaje }) // Simplificado para que el Apps Script no se confunda
-      });
-
-      if (!resp.ok) {
-        return "⚠️ Error del servidor HTTP: " + resp.status;
-      }
-
-      var datos = await resp.json();
-      console.log('Respuesta cruda de Google:', datos);
-
-      if (datos.error) {
-        return "⚠️ Error de Apps Script: " + datos.error;
-      }
-
-      // Intentar extraer de la estructura de Gemini
-      if (datos.candidates && datos.candidates[0] && datos.candidates[0].content && datos.candidates[0].content.parts) {
-        return datos.candidates[0].content.parts[0].text;
-      }
-
-      return "⚠️ Recibí una respuesta, pero no tenía el formato esperado.";
-
-    } catch (e) {
-      console.error('Error total:', e);
-      return '⚠️ Lo siento, tuve un problema de red al intentar contactar con el puente seguro. ' + e.message;
-    }
-  }
-
-  /* ── 2. FUNCIÓN PRINCIPAL DE UI DE FELIX ── */
+  /* ── FUNCIÓN PRINCIPAL: ENVIAR MENSAJE A GEMINI ── */
   async function felixSendMessage(userText) {
     if (!userText.trim() || isLoading) return;
+
     isLoading = true;
     appendMessage('user', userText);
     clearInput();
     showTyping(true);
     scrollToBottom();
 
-    // Inyectar system prompt en el primer turno (igual que la versión original)
-    if (chatHistory.length === 0) {
-      chatHistory.push({ role: 'user',  parts: [{ text: 'INSTRUCCIONES DEL SISTEMA: ' + SYSTEM_PROMPT }] });
-      chatHistory.push({ role: 'model', parts: [{ text: 'Entendido, soy Félix del portal de Empleados.' }] });
-    }
     chatHistory.push({ role: 'user', parts: [{ text: userText }] });
     if (chatHistory.length > FELIX_CFG.HISTORY_LIMIT * 2) {
       chatHistory = chatHistory.slice(-FELIX_CFG.HISTORY_LIMIT * 2);
     }
 
-    // Auditoría
     if (window.FU_Audit) FU_Audit.log('FELIX_IA', 'Consulta: ' + userText.substring(0, 60));
 
-    var reply = await consultarFelix(chatHistory);
+    // ── Helper: extraer texto de cualquier estructura de respuesta ──
+    function extraerTexto(d) {
+      if (!d) return null;
+      if (d.candidates && d.candidates[0] && d.candidates[0].content &&
+          d.candidates[0].content.parts && d.candidates[0].content.parts[0])
+        return d.candidates[0].content.parts[0].text || null;
+      return d.reply || d.respuesta || d.text || d.message || null;
+    }
 
-    chatHistory.push({ role: 'model', parts: [{ text: reply }] });
-    showTyping(false);
-    appendMessage('felix', reply);
-    isLoading = false;
-    scrollToBottom();
-    var inp = document.getElementById('felixInput');
-    if (inp) inp.focus();
+    var _self = this;
+    (async function() {
+      var reply = null;
+
+      /* ── Intento 1: Apps Script (puente serverless) ── */
+      try {
+        var ultimoMsg = chatHistory.length ? chatHistory[chatHistory.length-1].parts[0].text : '';
+        var resp = await fetch(FELIX_CFG.APPS_SCRIPT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ texto: ultimoMsg, historial: chatHistory })
+        });
+        if (resp.ok) {
+          var datos = await resp.json();
+          if (!datos.error) { reply = extraerTexto(datos); }
+          else console.warn('[Felix·AS] Error:', datos.error);
+        } else { console.warn('[Felix·AS] HTTP', resp.status); }
+      } catch(e) { console.warn('[Felix·AS] falló:', e.message); }
+
+      /* ── Intento 2: Gemini API directo (fallback automático) ── */
+      if (!reply) {
+        try {
+          var url = FELIX_CFG.ENDPOINT + FELIX_CFG.MODEL + ':generateContent?key=' + FELIX_CFG.API_KEY;
+          var body = {
+            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents: chatHistory,
+            generationConfig: { temperature: FELIX_CFG.TEMP, maxOutputTokens: FELIX_CFG.MAX_TOKENS, topP: 0.9 },
+            safetySettings: [
+              { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+              { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
+            ]
+          };
+          var r2 = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          if (!r2.ok) throw new Error('HTTP ' + r2.status);
+          var d2 = await r2.json();
+          reply = extraerTexto(d2);
+          if (!reply) throw new Error('Respuesta vacía');
+        } catch(e2) {
+          console.error('[Felix·FB] falló:', e2.message);
+          reply = '😔 Lo siento, tuve un problema de conexión. Por favor, intenta de nuevo en unos segundos.';
+        }
+      }
+
+      chatHistory.push({ role: 'model', parts: [{ text: reply }] });
+      showTyping(false);
+      appendMessage('felix', reply);
+      isLoading = false;
+      focusInput();
+    })();
   }
 
   /* ── UI HELPERS ── */
   function appendMessage(sender, text) {
     var list = document.getElementById('felixMessages');
     if (!list) return;
+
     var isFelix = sender === 'felix';
-    var now = new Date().toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
+    var now = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+
     var div = document.createElement('div');
     div.className = 'felix-msg' + (isFelix ? '' : ' user');
+
+    // Convertir markdown básico a HTML
     var html = formatText(text);
+
     div.innerHTML =
       '<div class="felix-msg-avatar">' + (isFelix ? '🤖' : '👤') + '</div>' +
-      '<div><div class="felix-msg-bubble">' + html + '</div>' +
-      '<div class="felix-msg-time">' + now + '</div></div>';
+      '<div>' +
+        '<div class="felix-msg-bubble">' + html + '</div>' +
+        '<div class="felix-msg-time">' + now + '</div>' +
+      '</div>';
+
     list.appendChild(div);
     scrollToBottom();
   }
 
-  function formatText(t) {
-    return t
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g,'<em>$1</em>')
-      .replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')
-      .replace(/^/,'<p>').replace(/$/,'</p>');
+  function formatText(text) {
+    return text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>')
+      .replace(/^/, '<p>').replace(/$/, '</p>');
   }
 
   function showTyping(show) {
@@ -4522,7 +4529,7 @@ function filtrarCategoria(cat, el) {
   }
 
   function scrollToBottom() {
-    setTimeout(function(){
+    setTimeout(function() {
       var list = document.getElementById('felixMessages');
       if (list) list.scrollTop = list.scrollHeight;
     }, 50);
@@ -4538,12 +4545,14 @@ function filtrarCategoria(cat, el) {
     if (inp) inp.focus();
   }
 
+  /* ── MENSAJE DE BIENVENIDA ── */
   function showWelcome() {
     var list = document.getElementById('felixMessages');
     if (!list || list.children.length > 0) return;
-    appendMessage('felix', '¡Hola! 👋 Soy **Félix**, tu asistente del Portal de Empleados FondoUne.\n\nPuedo ayudarte con la gestión de solicitudes, cambios de estado, descarga de documentos y mucho más. ¿En qué te puedo ayudar hoy?');
+    appendMessage('felix', '¡Hola! 👋 Soy **Félix**, tu asistente de FondoUne.\n\n¿En qué puedo ayudarte hoy? Puedo orientarte sobre tipos de crédito, documentos necesarios, el proceso de solicitud y mucho más.');
   }
 
+  /* ── CHIP CLICK ── */
   window.felixChipClick = function(text) {
     var inp = document.getElementById('felixInput');
     if (inp) inp.value = text;
@@ -4582,12 +4591,3 @@ function filtrarCategoria(cat, el) {
 
   /* Inicializar si el panel ya está abierto al cargar */
   document.addEventListener('DOMContentLoaded', function() {
-    var panel = document.getElementById('faqPanel');
-    if (panel && panel.classList.contains('show')) showWelcome();
-  });
-
-})();
-
-  </script>
-</body>
-</html>
