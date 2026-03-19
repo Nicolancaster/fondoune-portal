@@ -133,10 +133,8 @@ body::after {
 /* ═══ MAIN SCROLL AREA ═══ */
 .main {
   padding-top: calc(var(--top-h) + var(--safe-top));
-  padding-bottom: calc(var(--tab-h) + var(--safe-bot) + 24px);
-  min-height: 0;
-  position: relative;
-  z-index: 1;
+  padding-bottom: calc(var(--tab-h) + var(--safe-bot) + 8px);
+  min-height: 100vh;
 }
 
 /* ═══ VIEWS ═══ */
@@ -355,11 +353,13 @@ body::after {
 
 /* ═══ FELIX CHAT ═══ */
 .felix-view {
-  display: none;
-  flex-direction: column;
-  height: calc(100vh - var(--top-h) - var(--safe-top) - var(--tab-h) - var(--safe-bot) - 16px);
-  overflow: hidden;
-  padding: 0 !important;
+  display: none; flex-direction: column;
+  position: fixed;
+  top: calc(var(--top-h) + var(--safe-top));
+  bottom: calc(var(--tab-h) + var(--safe-bot));
+  left: 0; right: 0;
+  background: var(--bg);
+  z-index: 50;
 }
 .felix-view.active { display: flex; }
 .felix-header {
@@ -486,10 +486,6 @@ body::after {
   backdrop-filter: blur(24px) saturate(180%);
   border-top: 1px solid rgba(255,255,255,.06);
   display: flex; align-items: stretch;
-  pointer-events: all;
-  isolation: isolate;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
 }
 .tab-btn {
   flex: 1; display: flex; flex-direction: column; align-items: center;
@@ -497,10 +493,6 @@ body::after {
   color: rgba(255,255,255,.38); transition: color .2s;
   -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   padding-bottom: 2px;
-  pointer-events: all;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
 }
 .tab-btn.active { color: var(--fu-orange); }
 .tab-ico { font-size: 20px; line-height: 1; }
@@ -552,7 +544,7 @@ body::after {
 }
 
 /* ═══ SCROLL BEHAVIOR ═══ */
-.main { -webkit-overflow-scrolling: touch; overflow-x: hidden; }
+.main { -webkit-overflow-scrolling: touch; }
 </style>
 </head>
 <body>
@@ -698,7 +690,7 @@ body::after {
 
     <!-- Info chips -->
     <div class="info-row">
-      <span class="info-chip">📧 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1b78697e7f726f74686d726d727e757f7a5b7d74757f746e757e35787476">[email&#160;protected]</a></span>
+      <span class="info-chip">📧 creditosvivienda@fondoune.com</span>
       <span class="info-chip">📱 +57 300 352 8156</span>
     </div>
   </section>
@@ -945,9 +937,10 @@ body::after {
     </div>
   </section>
 
+</main>
 
-  <!-- ══ VIEW: FÉLIX ══ -->
-  <div class="felix-view view" id="view-felix">
+<!-- ═══ FÉLIX VIEW (fixed full) ═══ -->
+<div class="felix-view" id="view-felix">
   <div class="felix-header">
     <div class="felix-avatar">🤖</div>
     <div>
@@ -979,9 +972,7 @@ body::after {
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
   </div>
-  </div>
-
-</main>
+</div>
 
 <!-- ═══ BOTTOM TAB BAR ═══ -->
 <nav class="tabbar">
@@ -1010,7 +1001,7 @@ body::after {
 <!-- Toast -->
 <div class="toast" id="toast"><span id="toastIco"></span><span id="toastTxt"></span></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
 
 <script>
 /* ═══════════════════════════════════════════════════
@@ -1046,29 +1037,36 @@ body::after {
 
 /* ═══ NAV ═══ */
 var currentView = 'solicitud';
-window.goView = function(name) {
-  // Todas las vistas (incluido felix) tratadas igual
-  var views = ['solicitud','estado','datos','pqrs','felix'];
+function goView(name) {
+  // Views normales
+  var views = ['solicitud','estado','datos','pqrs'];
   views.forEach(function(v){
     var el = document.getElementById('view-'+v);
     var tb = document.getElementById('tab-'+v);
     if(el) el.classList[v===name?'add':'remove']('active');
     if(tb) tb.classList[v===name?'add':'remove']('active');
   });
-  // Felix: mensaje bienvenida e input
+  // Felix es especial (fixed overlay)
+  var felixView = document.getElementById('view-felix');
+  var felixTab  = document.getElementById('tab-felix');
   if(name==='felix'){
-    if(window.felixHistory.length===0) setTimeout(felixBienvenida, 350);
-    setTimeout(function(){ var inp=document.getElementById('felixInput'); if(inp)inp.focus(); },450);
+    felixView.classList.add('active');
+    felixTab.classList.add('active');
+    if(window.felixHistory.length===0) setTimeout(felixBienvenida, 300);
+    setTimeout(function(){ var inp=document.getElementById('felixInput'); if(inp)inp.focus(); },400);
+  } else {
+    felixView.classList.remove('active');
+    if(felixTab) felixTab.classList.remove('active');
+    // scroll top on view change
+    var main = document.getElementById('mainScroll');
+    if(main) main.scrollTop = 0;
   }
-  // Scroll al inicio en vistas normales
-  var main = document.getElementById('mainScroll');
-  if(main && name!=='felix') main.scrollTop = 0;
   currentView = name;
   if(window.FU_Audit) FU_Audit.log('NAV',name);
 }
 
 /* ═══ COLLAPSIBLES (Datos) ═══ */
-window.toggleCollapse = function toggleCollapse(id) {
+function toggleCollapse(id) {
   var trigger = document.getElementById('ct-'+id);
   var body    = document.getElementById('cb-'+id);
   if(!trigger||!body) return;
@@ -1109,7 +1107,7 @@ function showToast(ico, txt) {
 
 /* ═══ PQRS tipo selector ═══ */
 var pqrsTipo = 'peticion';
-window.setPqrsTipo = function setPqrsTipo(t) {
+function setPqrsTipo(t) {
   pqrsTipo = t;
   ['peticion','queja','reclamo','sugerencia'].forEach(function(k){
     document.getElementById('pt-'+k).classList[k===t?'add':'remove']('on');
@@ -1149,14 +1147,14 @@ function activarCamposPeso() {
   });
 }
 
-window.toggleRut = function toggleRut(chk, inputId){
+function toggleRut(chk, inputId){
   var inp=$id(inputId);
   if(!inp)return;
   inp.disabled=chk.checked;
   if(chk.checked){inp.value='';inp.placeholder='No aplica';}
   else{inp.placeholder='Ej: 900.123.456-7';}
 }
-window.toggleOtroBanco = function toggleOtroBanco(sel){
+function toggleOtroBanco(sel){
   var fld=$id('fld-otroBanco');
   if(fld) fld.style.display=sel.value==='Otro'?'block':'none';
 }
@@ -1472,10 +1470,9 @@ window.PQRS = PQRS;
 
 /* ═══ FÉLIX IA ═══ */
 var FELIX_CFG = {
-  API_KEY:   'AIzaSyCVnJ5PvN1YpszBH_guLyb9tQfCqfuM1xw',
-  MODEL:     'gemini-2.5-flash',
-  ENDPOINT:  'https://generativelanguage.googleapis.com/v1beta/models/',
-  APPS_SCRIPT: 'https://script.google.com/macros/s/AKfycbyjEtX8qXtnv29-ZeKlvJna75gFOqtjX8AO6DWm6YV_SZnkHKRscmY7qE32KEFIK8yp/exec',
+  API_KEY: 'AIzaSyCVnJ5PvN1YpszBH_guLyb9tQfCqfuM1xw',
+  MODEL: 'gemini-2.0-flash',
+  ENDPOINT: 'https://generativelanguage.googleapis.com/v1beta/models/',
   MAX_TOKENS: 512, TEMP: 0.7, HISTORY_LIMIT: 20
 };
 var FELIX_SYSTEM = [
@@ -1553,44 +1550,20 @@ function _extraerTexto(datos){
 }
 
 async function felixQuery(historia){
-  var ultimoMsg = historia.length ? historia[historia.length-1].parts[0].text : '';
-
-  /* ── Intento 1: Apps Script (puente serverless) ── */
-  try {
-    var resp = await fetch(FELIX_CFG.APPS_SCRIPT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ texto: ultimoMsg, historial: historia })
-    });
-    if (resp.ok) {
-      var datos = await resp.json();
-      console.log('[Felix·AS]', JSON.stringify(datos).substring(0,200));
-      if (!datos.error) {
-        var t = _extraerTexto(datos);
-        if (t) return t;
-      } else { console.warn('[Felix·AS] Error:', datos.error); }
-    } else { console.warn('[Felix·AS] HTTP', resp.status, '— fallback'); }
-  } catch(e) { console.warn('[Felix·AS] falló:', e.message, '— fallback Gemini'); }
-
-  /* ── Intento 2: Gemini API directo (fallback) ── */
-  try {
-    var url = FELIX_CFG.ENDPOINT + FELIX_CFG.MODEL + ':generateContent?key=' + FELIX_CFG.API_KEY;
-    var r = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: historia,
-        generationConfig: { temperature: FELIX_CFG.TEMP, maxOutputTokens: FELIX_CFG.MAX_TOKENS, topP: 0.9 }
-      })
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    var d = await r.json();
-    var t2 = _extraerTexto(d);
-    if (t2) return t2;
+  try{
+    var url=FELIX_CFG.ENDPOINT+FELIX_CFG.MODEL+':generateContent?key='+FELIX_CFG.API_KEY;
+    var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      contents:historia,
+      generationConfig:{temperature:FELIX_CFG.TEMP,maxOutputTokens:FELIX_CFG.MAX_TOKENS,topP:0.9}
+    })});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    var d=await r.json();
+    var t=_extraerTexto(d);
+    if(t) return t;
     throw new Error('Respuesta vacía');
-  } catch(e2) {
-    console.error('[Felix·FB] falló:', e2.message);
-    return '⚠️ Lo siento, tuve un problema de conexión. Por favor, intenta de nuevo en unos segundos.';
+  }catch(e){
+    console.error('[Felix]',e.message);
+    return '⚠️ Lo siento, tuve un problema de conexión. Por favor, intenta de nuevo.';
   }
 }
 
@@ -1618,15 +1591,22 @@ async function felixSendMessage(userText){
   if(inp) inp.focus();
 }
 
-window.felixSend = function felixSend(){
+function felixSend(){
   var inp=$id('felixInput');
   if(inp) felixSendMessage(inp.value.trim());
 }
-window.felixChip = function felixChip(text){ felixSendMessage(text); }
-window.felixKeydown = function felixKeydown(e){
+function felixChip(text){ felixSendMessage(text); }
+function felixKeydown(e){
   if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); felixSend(); return; }
   var inp=e.target;
   setTimeout(function(){ inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,100)+'px'; },0);
 }
 
-/* ═══ BUSCADOR EST
+/* ═══ BUSCADOR ESTADO — atajo ═══ */
+document.addEventListener('DOMContentLoaded', function(){
+  var bi=$id('buscarInput');
+  if(bi) bi.addEventListener('keydown',function(e){ if(e.key==='Enter') APP.buscarEstado(); });
+});
+</script>
+</body>
+</html>
