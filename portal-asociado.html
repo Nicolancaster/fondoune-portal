@@ -4353,10 +4353,9 @@ function filtrarCategoria(cat, el) {
 
   /* ── CONFIGURACIÓN ── */
   var FELIX_CFG = {
-    API_KEY:      'AIzaSyCVnJ5PvN1YpszBH_guLyb9tQfCqfuM1xw',
-    MODEL:        'gemini-2.5-flash',
-    ENDPOINT:     'https://generativelanguage.googleapis.com/v1beta/models/',
-    APPS_SCRIPT:  'https://script.google.com/macros/s/AKfycbyjEtX8qXtnv29-ZeKlvJna75gFOqtjX8AO6DWm6YV_SZnkHKRscmY7qE32KEFIK8yp/exec',
+    API_KEY:   'AIzaSyCVnJ5PvN1YpszBH_guLyb9tQfCqfuM1xw',
+    MODEL:     'gemini-2.5-flash',
+    ENDPOINT:  'https://generativelanguage.googleapis.com/v1beta/models/',
     MAX_TOKENS: 512,
     TEMP:       0.7,
     HISTORY_LIMIT: 20
@@ -4410,15 +4409,75 @@ function filtrarCategoria(cat, el) {
   var isLoading = false;
 
   /* ── FUNCIÓN PRINCIPAL: ENVIAR MENSAJE A GEMINI ── */
-  async function felixSendMessage(userText) {
-    if (!userText.trim() || isLoading) return;
+  async function /* ── HELPER: extraer texto de respuesta Gemini (cualquier forma) ── */
+  function _extraerTextoGemini(datos) {
+    if (!datos) return null;
+    if (datos.candidates && datos.candidates[0] &&
+        datos.candidates[0].content && datos.candidates[0].content.parts &&
+        datos.candidates[0].content.parts[0])
+      return datos.candidates[0].content.parts[0].text || null;
+    return datos.reply || datos.respuesta || datos.text || datos.message ||
+           datos.output || datos.result || null;
+  }
 
+  /* ── CONSULTA: Apps Script primero, Gemini directo como fallback ── */
+  async function _consultarFelixAsoc(historial) {
+    const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbyjEtX8qXtnv29-ZeKlvJna75gFOqtjX8AO6DWm6YV_SZnkHKRscmY7qE32KEFIK8yp/exec';
+    var ultimoMensaje = historial.length ? historial[historial.length - 1].parts[0].text : '';
+
+    /* ── Intento 1: Apps Script ── */
+    try {
+      var resp = await fetch(URL_APPS_SCRIPT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ texto: ultimoMensaje, historial: historial })
+      });
+      if (resp.ok) {
+        var datos = await resp.json();
+        console.log('[Felix·AS] Respuesta:', JSON.stringify(datos).substring(0, 300));
+        if (!datos.error) {
+          var texto = _extraerTextoGemini(datos);
+          if (texto) return texto;
+        } else { console.warn('[Felix·AS] Error:', datos.error); }
+      } else { console.warn('[Felix·AS] HTTP', resp.status, '— fallback'); }
+    } catch(e) { console.warn('[Felix·AS] falló:', e.message, '— fallback Gemini directo'); }
+
+    /* ── Intento 2: Gemini API directo (fallback automático) ── */
+    console.log('[Felix·FB] Usando Gemini API directo');
+    try {
+      var url = FELIX_CFG.ENDPOINT + FELIX_CFG.MODEL + ':generateContent?key=' + FELIX_CFG.API_KEY;
+      var payload = {
+        contents: historial,
+        generationConfig: { temperature: FELIX_CFG.TEMP, maxOutputTokens: FELIX_CFG.MAX_TOKENS, topP: 0.9 }
+      };
+      var r2 = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!r2.ok) throw new Error('HTTP ' + r2.status);
+      var d2 = await r2.json();
+      var texto2 = _extraerTextoGemini(d2);
+      if (texto2) return texto2;
+      throw new Error('Respuesta vacía');
+    } catch(e2) {
+      console.error('[Felix·FB] Fallback falló:', e2.message);
+      return '😔 Lo siento, tuve un problema de conexión. Por favor, intenta de nuevo.';
+    }
+  }
+
+  async felixSendMessage(userText) {
+    if (!userText.trim() || isLoading) return;
     isLoading = true;
     appendMessage('user', userText);
     clearInput();
     showTyping(true);
     scrollToBottom();
 
+    if (chatHistory.length === 0) {
+      chatHistory.push({ role: 'user',  parts: [{ text: 'INSTRUCCIONES DEL SISTEMA: ' + SYSTEM_PROMPT }] });
+      chatHistory.push({ role: 'model', parts: [{ text: 'Entendido, soy Félix del Portal de Asociados FondoUne.' }] });
+    }
     chatHistory.push({ role: 'user', parts: [{ text: userText }] });
     if (chatHistory.length > FELIX_CFG.HISTORY_LIMIT * 2) {
       chatHistory = chatHistory.slice(-FELIX_CFG.HISTORY_LIMIT * 2);
@@ -4426,66 +4485,14 @@ function filtrarCategoria(cat, el) {
 
     if (window.FU_Audit) FU_Audit.log('FELIX_IA', 'Consulta: ' + userText.substring(0, 60));
 
-    // ── Helper: extraer texto de cualquier estructura de respuesta ──
-    function extraerTexto(d) {
-      if (!d) return null;
-      if (d.candidates && d.candidates[0] && d.candidates[0].content &&
-          d.candidates[0].content.parts && d.candidates[0].content.parts[0])
-        return d.candidates[0].content.parts[0].text || null;
-      return d.reply || d.respuesta || d.text || d.message || null;
-    }
+    var reply = await _consultarFelixAsoc(chatHistory);
 
-    var _self = this;
-    (async function() {
-      var reply = null;
-
-      /* ── Intento 1: Apps Script (puente serverless) ── */
-      try {
-        var ultimoMsg = chatHistory.length ? chatHistory[chatHistory.length-1].parts[0].text : '';
-        var resp = await fetch(FELIX_CFG.APPS_SCRIPT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ texto: ultimoMsg, historial: chatHistory })
-        });
-        if (resp.ok) {
-          var datos = await resp.json();
-          if (!datos.error) { reply = extraerTexto(datos); }
-          else console.warn('[Felix·AS] Error:', datos.error);
-        } else { console.warn('[Felix·AS] HTTP', resp.status); }
-      } catch(e) { console.warn('[Felix·AS] falló:', e.message); }
-
-      /* ── Intento 2: Gemini API directo (fallback automático) ── */
-      if (!reply) {
-        try {
-          var url = FELIX_CFG.ENDPOINT + FELIX_CFG.MODEL + ':generateContent?key=' + FELIX_CFG.API_KEY;
-          var body = {
-            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            contents: chatHistory,
-            generationConfig: { temperature: FELIX_CFG.TEMP, maxOutputTokens: FELIX_CFG.MAX_TOKENS, topP: 0.9 },
-            safetySettings: [
-              { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-              { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
-            ]
-          };
-          var r2 = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-          if (!r2.ok) throw new Error('HTTP ' + r2.status);
-          var d2 = await r2.json();
-          reply = extraerTexto(d2);
-          if (!reply) throw new Error('Respuesta vacía');
-        } catch(e2) {
-          console.error('[Felix·FB] falló:', e2.message);
-          reply = '😔 Lo siento, tuve un problema de conexión. Por favor, intenta de nuevo en unos segundos.';
-        }
-      }
-
-      chatHistory.push({ role: 'model', parts: [{ text: reply }] });
-      showTyping(false);
-      appendMessage('felix', reply);
-      isLoading = false;
-      focusInput();
-    })();
+    chatHistory.push({ role: 'model', parts: [{ text: reply }] });
+    showTyping(false);
+    appendMessage('felix', reply);
+    isLoading = false;
+    focusInput();
+    scrollToBottom();
   }
 
   /* ── UI HELPERS ── */
