@@ -4558,8 +4558,8 @@ window.addEventListener('resize', _debounce(function() {
         '<td>'+ fmtFecha(a.asocFechaIngreso) +'</td>' +
         '<td><span style="font-size:11px;font-weight:700;color:'+pctColor+'">'+pct+'%</span></td>' +
         '<td><div class="row-actions">' +
-          '<button class="act-btn" title="Editar" onclick="asocAbrirEdicion(''+_esc(ced)+'')">✏️</button>' +
-          '<button class="act-btn danger" title="Eliminar" onclick="asocEliminar(''+_esc(ced)+'')">🗑️</button>' +
+          '<button class="act-btn" title="Editar" data-ced="'+_esc(ced)+'" onclick="asocAbrirEdicion(this.dataset.ced)">✏️</button>' +
+          '<button class="act-btn danger" title="Eliminar" data-ced="'+_esc(ced)+'" onclick="asocEliminar(this.dataset.ced)">🗑️</button>' +
         '</div></td>' +
         '</tr>';
     }).join('');
