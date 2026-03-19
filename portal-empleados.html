@@ -1916,74 +1916,6 @@ tbody tr:nth-child(n+6){ animation-delay: .18s; }
           </div>
         </div>
       </div>
-    </div>
-
-  </div><!-- /content -->
-</div><!-- /main-layout -->
-
-<!-- ════════════════════════════════════════
-     PANEL GESTIÓN DE USUARIOS (Admin only)
-     ════════════════════════════════════════ -->
-<div class="adm-overlay" id="usrOverlay" onclick="if(event.target===this)cerrarUsrModal()"></div>
-
-<!-- Modal: Crear / Editar usuario -->
-<div class="adm-modal" id="usrModal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-48%) scale(.96);z-index:801;opacity:0;pointer-events:none;transition:all .28s cubic-bezier(.34,1.2,.64,1);">
-  <div class="adm-head">
-    <div class="adm-head-title" id="usrModalTitle">👤 Crear Usuario</div>
-    <button class="adm-close" onclick="cerrarUsrModal()">✕</button>
-  </div>
-  <div class="adm-body">
-    <input type="hidden" id="usrEditKey">
-    <div class="adm-field">
-      <div class="adm-label">👤 Nombre completo</div>
-      <input class="adm-input" id="usrNombre" placeholder="Ej: María González" maxlength="60">
-    </div>
-    <div class="adm-field">
-      <div class="adm-label">🔑 Usuario (login)</div>
-      <input class="adm-input" id="usrLogin" placeholder="Ej: mgonzalez" maxlength="30" autocomplete="off">
-      <div class="adm-hint">Solo letras, números y guión bajo. No se puede cambiar después.</div>
-    </div>
-    <div class="adm-field">
-      <div class="adm-label">🎭 Rol</div>
-      <select class="adm-select" id="usrRol">
-        <option value="Asesor">Asesor</option>
-        <option value="Administrador">Administrador</option>
-      </select>
-    </div>
-    <div class="adm-field" id="usrPassField">
-      <div class="adm-label">🔒 Contraseña</div>
-      <div class="adm-pass-wrap">
-        <input class="adm-input" id="usrPass" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
-        <button class="adm-pass-eye" onclick="togglePassField('usrPass')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-    </div>
-    <div class="adm-field" id="usrPassField2">
-      <div class="adm-label">🔒 Confirmar contraseña</div>
-      <div class="adm-pass-wrap">
-        <input class="adm-input" id="usrPass2" type="password" placeholder="Repite la contraseña" autocomplete="new-password">
-        <button class="adm-pass-eye" onclick="togglePassField('usrPass2')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-    </div>
-    <div class="adm-field" id="usrPassCambioField" style="display:none;">
-      <div class="adm-label">🔄 Nueva contraseña <span style="font-weight:400;text-transform:none;letter-spacing:0;">(dejar vacío para no cambiar)</span></div>
-      <div class="adm-pass-wrap">
-        <input class="adm-input" id="usrPassCambio" type="password" placeholder="Nueva contraseña (opcional)" autocomplete="new-password">
-        <button class="adm-pass-eye" onclick="togglePassField('usrPassCambio')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-    </div>
-    <div class="adm-msg" id="usrModalMsg"></div>
-  </div>
-  <div class="adm-footer">
-    <button class="btn btn-outline" onclick="cerrarUsrModal()">Cancelar</button>
-    <button class="btn btn-gold" onclick="guardarUsuario()" id="usrGuardarBtn">💾 Guardar</button>
-  </div>
-</div>
 
 
     <!-- ════ BASE DE DATOS ASOCIADOS (OPA) ════ -->
@@ -2064,6 +1996,76 @@ tbody tr:nth-child(n+6){ animation-delay: .18s; }
       </div>
     </div>
 
+
+
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main-layout -->
+
+<!-- ════════════════════════════════════════
+     PANEL GESTIÓN DE USUARIOS (Admin only)
+     ════════════════════════════════════════ -->
+<div class="adm-overlay" id="usrOverlay" onclick="if(event.target===this)cerrarUsrModal()"></div>
+
+<!-- Modal: Crear / Editar usuario -->
+<div class="adm-modal" id="usrModal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-48%) scale(.96);z-index:801;opacity:0;pointer-events:none;transition:all .28s cubic-bezier(.34,1.2,.64,1);">
+  <div class="adm-head">
+    <div class="adm-head-title" id="usrModalTitle">👤 Crear Usuario</div>
+    <button class="adm-close" onclick="cerrarUsrModal()">✕</button>
+  </div>
+  <div class="adm-body">
+    <input type="hidden" id="usrEditKey">
+    <div class="adm-field">
+      <div class="adm-label">👤 Nombre completo</div>
+      <input class="adm-input" id="usrNombre" placeholder="Ej: María González" maxlength="60">
+    </div>
+    <div class="adm-field">
+      <div class="adm-label">🔑 Usuario (login)</div>
+      <input class="adm-input" id="usrLogin" placeholder="Ej: mgonzalez" maxlength="30" autocomplete="off">
+      <div class="adm-hint">Solo letras, números y guión bajo. No se puede cambiar después.</div>
+    </div>
+    <div class="adm-field">
+      <div class="adm-label">🎭 Rol</div>
+      <select class="adm-select" id="usrRol">
+        <option value="Asesor">Asesor</option>
+        <option value="Administrador">Administrador</option>
+      </select>
+    </div>
+    <div class="adm-field" id="usrPassField">
+      <div class="adm-label">🔒 Contraseña</div>
+      <div class="adm-pass-wrap">
+        <input class="adm-input" id="usrPass" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+        <button class="adm-pass-eye" onclick="togglePassField('usrPass')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="adm-field" id="usrPassField2">
+      <div class="adm-label">🔒 Confirmar contraseña</div>
+      <div class="adm-pass-wrap">
+        <input class="adm-input" id="usrPass2" type="password" placeholder="Repite la contraseña" autocomplete="new-password">
+        <button class="adm-pass-eye" onclick="togglePassField('usrPass2')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="adm-field" id="usrPassCambioField" style="display:none;">
+      <div class="adm-label">🔄 Nueva contraseña <span style="font-weight:400;text-transform:none;letter-spacing:0;">(dejar vacío para no cambiar)</span></div>
+      <div class="adm-pass-wrap">
+        <input class="adm-input" id="usrPassCambio" type="password" placeholder="Nueva contraseña (opcional)" autocomplete="new-password">
+        <button class="adm-pass-eye" onclick="togglePassField('usrPassCambio')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="adm-msg" id="usrModalMsg"></div>
+  </div>
+  <div class="adm-footer">
+    <button class="btn btn-outline" onclick="cerrarUsrModal()">Cancelar</button>
+    <button class="btn btn-gold" onclick="guardarUsuario()" id="usrGuardarBtn">💾 Guardar</button>
+  </div>
+</div>
 <!-- MODAL EDITAR ASOCIADO -->
 <div class="modal-overlay" id="asocModalOverlay" onclick="if(event.target===this)cerrarAsocModal()" style="display:none">
   <div class="modal" style="max-width:700px">
