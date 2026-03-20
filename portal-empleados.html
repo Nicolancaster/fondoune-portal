@@ -4182,39 +4182,16 @@ window.addEventListener('resize', _debounce(function() {
 
   /* ── 1. LLAMADA AL BACKEND (APPS SCRIPT) con fallback a Gemini directo ── */
   async function consultarFelix(historial) {
-    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyjEtX8qXtnv29-ZeKlvJna75gFOqtjX8AO6DWm6YV_SZnkHKRscmY7qE32KEFIK8yp/exec";
-    var ultimoMensaje = historial.length ? historial[historial.length - 1].parts[0].text : '';
-
-    /* ── Intento 1: Apps Script (puente serverless) ── */
-    try {
-      var resp = await fetch(URL_APPS_SCRIPT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ texto: ultimoMensaje, historial: historial })
-      });
-      if (resp.ok) {
-        var datos = await resp.json();
-        console.log('[Felix·AS] Respuesta:', JSON.stringify(datos).substring(0, 300));
-        if (!datos.error) {
-          var texto = _extraerTextoGemini(datos);
-          if (texto) return texto;
-        } else {
-          console.warn('[Felix·AS] Error del servidor:', datos.error);
-        }
-      } else {
-        console.warn('[Felix·AS] HTTP', resp.status, '— activando fallback');
-      }
-    } catch (e) {
-      console.warn('[Felix·AS] Fetch falló:', e.message, '— activando fallback Gemini directo');
-    }
-
-    /* ── Intento 2: Gemini API directo (fallback automático) ── */
-    console.log('[Felix·FB] Usando Gemini API directo');
+    /* ── Gemini API directo — Apps Script bloqueado por CORS desde GitHub Pages ── */
     try {
       var url = FELIX_CFG.ENDPOINT + FELIX_CFG.MODEL + ':generateContent?key=' + FELIX_CFG.API_KEY;
       var payload = {
         contents: historial,
-        generationConfig: { temperature: FELIX_CFG.TEMP, maxOutputTokens: FELIX_CFG.MAX_TOKENS, topP: 0.9 }
+        generationConfig: {
+          temperature: FELIX_CFG.TEMP,
+          maxOutputTokens: FELIX_CFG.MAX_TOKENS,
+          topP: 0.9
+        }
       };
       var r2 = await fetch(url, {
         method: 'POST',
@@ -4227,8 +4204,8 @@ window.addEventListener('resize', _debounce(function() {
       if (texto2) return texto2;
       throw new Error('Respuesta vacía');
     } catch (e2) {
-      console.error('[Felix·FB] Fallback también falló:', e2.message);
-      return '⚠️ Lo siento, tuve un problema de conexión. Por favor, intenta de nuevo en unos segundos.';
+      console.error('[Felix] Error Gemini API:', e2.message);
+      return '⚠️ Lo siento, tuve un problema de conexión. Por favor, intenta de nuevo.';
     }
   }
 
@@ -4434,6 +4411,8 @@ window.addEventListener('resize', _debounce(function() {
   }
 
   /* ── CARGAR DESDE FIREBASE ── */
+  var _unsubscribe = null; // listener en tiempo real
+
   window.asocRecargar = function() {
     var tbody = document.getElementById('asocTblBody');
     if (tbody) {
@@ -4441,24 +4420,30 @@ window.addEventListener('resize', _debounce(function() {
       var tr = tbody.insertRow();
       var td = tr.insertCell();
       td.colSpan = 9;
-      td.style.textAlign = 'center';
-      td.style.padding = '30px';
-      td.style.color = 'var(--muted)';
+      td.style.cssText = 'text-align:center;padding:30px;color:var(--muted)';
       td.textContent = '\u23f3 Cargando desde Firebase\u2026';
     }
+
+    // Cancelar listener anterior si existe
+    if (_unsubscribe) { _unsubscribe(); _unsubscribe = null; }
+
     if (window._fbDB) {
-      window._fbDB.collection('asociados').get()
-        .then(function(snap) {
+      // onSnapshot: actualización en TIEMPO REAL — cada vez que un asociado
+      // guarda sus datos en el portal, se refleja aquí automáticamente
+      _unsubscribe = window._fbDB.collection('asociados')
+        .onSnapshot(function(snap) {
           var arr = [];
           snap.forEach(function(doc) { arr.push(doc.data()); });
           _datos = arr;
           try { localStorage.setItem(CACHE_KEY, JSON.stringify(arr)); } catch(e) {}
           _poblarDeptos();
           asocFiltrar();
+          var cnt = document.getElementById('cnt-asociados');
+          if (cnt) cnt.textContent = arr.length;
+          console.log('[ASOC] Actualizado en tiempo real:', arr.length, 'asociados');
           if (window.FU_Audit) FU_Audit.log('ASOC_CARGADOS', arr.length + ' asociados');
-        })
-        .catch(function(e) {
-          console.warn('Firebase asociados:', e.message);
+        }, function(e) {
+          console.warn('Firebase onSnapshot error:', e.message);
           _desdeCache();
         });
     } else {
@@ -4768,9 +4753,13 @@ window.addEventListener('resize', _debounce(function() {
   var _orig = window.showPanel;
   window.showPanel = function(id) {
     if (typeof _orig === 'function') _orig(id);
-    if (id === 'asociados' && !_cargado) {
-      _cargado = true;
-      window.asocRecargar();
+    if (id === 'asociados') {
+      if (!_cargado) {
+        _cargado = true;
+        // Primera vez: activar listener en tiempo real
+        window.asocRecargar();
+      }
+      // El listener onSnapshot ya mantiene los datos actualizados automáticamente
     }
   };
 

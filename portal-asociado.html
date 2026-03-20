@@ -3440,6 +3440,7 @@ var ASOC = (function () {
 
   /* ── Guardar en localStorage ── */
   function guardar() {
+    console.log('[ASOC] Iniciando guardar(). Firebase activo:', !!(window._fbDB));
     var data = {};
     CAMPOS.forEach(function(id) {
       var el = document.getElementById(id);
@@ -3469,8 +3470,28 @@ var ASOC = (function () {
       data._updated  = new Date().toISOString();
       data._source   = 'portal-asociado';
       window._fbDB.collection('asociados').doc(cedula).set(data, { merge: true })
-        .then(function() { console.log('[ASOC] Datos sincronizados con Firebase'); })
-        .catch(function(e) { console.warn('[ASOC] Error Firebase:', e.message); });
+        .then(function() {
+          console.log('[ASOC] ✅ Sincronizado con Firebase — cédula:', cedula);
+          var bar = document.getElementById('asocSavedBar');
+          if (bar) {
+            bar.classList.add('show');
+            bar.style.background = 'linear-gradient(135deg,#0D7A4E,#0a6040)';
+            bar.textContent = '\u2705 Datos guardados y visibles para el equipo FondoUne';
+            setTimeout(function() { bar.classList.remove('show'); bar.style.background=''; }, 4000);
+          }
+        })
+        .catch(function(e) {
+          console.error('[ASOC] \u274c Firebase sin permisos:', e.message);
+          // Firebase sin permisos: datos quedan en localStorage (sincronización pendiente)
+          // El empleado puede verlos cuando el admin actualice las reglas Firestore
+          var bar = document.getElementById('asocSavedBar');
+          if (bar) {
+            bar.classList.add('show');
+            bar.style.background = 'linear-gradient(135deg,#B45309,#92400E)';
+            bar.textContent = '\u26a0\ufe0f Datos guardados localmente. Contacta al administrador para activar la sincronización en la nube.';
+            setTimeout(function() { bar.classList.remove('show'); bar.style.background=''; bar.textContent=''; }, 6000);
+          }
+        });
     }
 
     /* Actualizar el toggle txt para indicar que hay datos */
@@ -4469,53 +4490,30 @@ window.abrirFelix = function() {
 
   /* ── 1. LLAMADA AL BACKEND (APPS SCRIPT) con fallback a Gemini directo ── */
   async function consultarFelix(historial) {
-    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyjEtX8qXtnv29-ZeKlvJna75gFOqtjX8AO6DWm6YV_SZnkHKRscmY7qE32KEFIK8yp/exec";
-    var ultimoMensaje = historial.length ? historial[historial.length - 1].parts[0].text : '';
-
-    /* ── Intento 1: Apps Script (puente serverless) ── */
-    try {
-      var resp = await fetch(URL_APPS_SCRIPT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ texto: ultimoMensaje, historial: historial })
-      });
-      if (resp.ok) {
-        var datos = await resp.json();
-        console.log('[Felix·AS] Respuesta:', JSON.stringify(datos).substring(0, 300));
-        if (!datos.error) {
-          var texto = _extraerTextoGemini(datos);
-          if (texto) return texto;
-        } else {
-          console.warn('[Felix·AS] Error del servidor:', datos.error);
-        }
-      } else {
-        console.warn('[Felix·AS] HTTP', resp.status, '— activando fallback');
-      }
-    } catch (e) {
-      console.warn('[Felix·AS] Fetch falló:', e.message, '— activando fallback Gemini directo');
-    }
-
-    /* ── Intento 2: Gemini API directo (fallback automático) ── */
-    console.log('[Felix·FB] Usando Gemini API directo');
+    /* ── Gemini API directo (Apps Script bloqueado por CORS desde GitHub Pages) ── */
     try {
       var url = FELIX_CFG.ENDPOINT + FELIX_CFG.MODEL + ':generateContent?key=' + FELIX_CFG.API_KEY;
       var payload = {
         contents: historial,
-        generationConfig: { temperature: FELIX_CFG.TEMP, maxOutputTokens: FELIX_CFG.MAX_TOKENS, topP: 0.9 }
+        generationConfig: {
+          temperature: FELIX_CFG.TEMP,
+          maxOutputTokens: FELIX_CFG.MAX_TOKENS,
+          topP: 0.9
+        }
       };
-      var r2 = await fetch(url, {
+      var r = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (!r2.ok) throw new Error('HTTP ' + r2.status);
-      var d2 = await r2.json();
-      var texto2 = _extraerTextoGemini(d2);
-      if (texto2) return texto2;
-      throw new Error('Respuesta vacía');
-    } catch (e2) {
-      console.error('[Felix·FB] Fallback también falló:', e2.message);
-      return '⚠️ Lo siento, tuve un problema de conexión. Por favor, intenta de nuevo en unos segundos.';
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      var d = await r.json();
+      var texto = _extraerTextoGemini(d);
+      if (texto) return texto;
+      throw new Error('Respuesta vacía de Gemini');
+    } catch (e) {
+      console.error('[Felix] Error Gemini API:', e.message);
+      return '\u26a0\ufe0f Lo siento, tuve un problema de conexi\u00f3n. Por favor, intenta de nuevo.';
     }
   }
 
